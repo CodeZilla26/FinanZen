@@ -1,0 +1,45 @@
+<div class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors">
+  
+  <!-- Global Top Navigation -->
+  <app-navbar></app-navbar>
+
+  <!-- Main Content Dashboard Area -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 pb-12">
+    
+    <!-- Header Banner -->
+    <div class="pb-2">
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+        Panel de Control Financiero
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+        Resumen detallado de tus ingresos, gastos mensuales y flujo de efectivo.
+      </p>
+    </div>
+
+    <!-- Section 1: KPI Summary Cards -->
+    <section aria-label="Tarjetas de balance general">
+      <app-summary-cards></app-summary-cards>
+    </section>
+
+    <!-- Section 2: Movements & Breakdown Grid -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      
+      <!-- Main Column: Movement List Table (2 cols on large screen) -->
+      <div class="lg:col-span-2 space-y-6">
+        <app-movement-list></app-movement-list>
+      </div>
+
+      <!-- Right Column: Visual Breakdown (1 col on large screen) -->
+      <div class="space-y-6">
+        <!-- Category Distribution Progress Bars -->
+        <app-category-breakdown></app-category-breakdown>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- New Movement Modal -->
+  <app-movement-modal></app-movement-modal>
+
+</div>
