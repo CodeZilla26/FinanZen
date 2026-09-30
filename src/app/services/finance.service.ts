@@ -1,10 +1,11 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { Movement, MovementType, CATEGORIES } from '../models/movement.model';
+import { Movement, MovementType, CATEGORIES, ACCOUNTS, AccountInfo } from '../models/movement.model';
 import { firestore } from '../config/firebase.config';
 import {
   collection,
   onSnapshot,
   addDoc,
+  updateDoc,
   deleteDoc,
   doc,
   query,
@@ -20,6 +21,17 @@ export interface CategoryBreakdownItem {
   percentage: number;
 }
 
+export interface AccountSummaryItem {
+  id: string;
+  name: string;
+  type: 'efectivo' | 'banco' | 'billetera';
+  balance: number;
+  income: number;
+  expense: number;
+  badgeBg: string;
+  badgeText: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -29,10 +41,12 @@ export class FinanceService {
   readonly isLoading = signal<boolean>(true);
   readonly errorMessage = signal<string | null>(null);
 
-  readonly selectedTypeFilter = signal<'all' | 'income' | 'expense'>('all');
+  readonly selectedTypeFilter = signal<'all' | 'income' | 'expense' | 'transfer'>('all');
   readonly selectedCategoryFilter = signal<string>('all');
+  readonly selectedAccountFilter = signal<string>('all');
   readonly searchTerm = signal<string>('');
   readonly isModalOpen = signal<boolean>(false);
+  readonly editingMovement = signal<Movement | null>(null);
 
   constructor() {
     this.listenToMovements();
@@ -40,7 +54,6 @@ export class FinanceService {
 
   /**
    * Suscripción en tiempo real a la colección 'movements' de Cloud Firestore.
-   * Cualquier cambio en la base de datos se refleja de inmediato en los Signals.
    */
   private listenToMovements(): void {
     this.isLoading.set(true);
@@ -61,6 +74,8 @@ export class FinanceService {
               amount: Number(data['amount']) || 0,
               type: data['type'] as MovementType,
               category: data['category'] || 'otros',
+              account: data['account'] || 'efectivo',
+              toAccount: data['toAccount'] || '',
               date: data['date'] || new Date().toISOString().substring(0, 10)
             };
           });
@@ -113,21 +128,76 @@ export class FinanceService {
     return Math.round((balance / income) * 100);
   });
 
+  // Resumen de saldos por cuenta / método de pago
+  readonly accountsSummary = computed<AccountSummaryItem[]>(() => {
+    const stats: Record<string, { income: number; expense: number; balance: number }> = {};
+
+    for (const accId of Object.keys(ACCOUNTS)) {
+      stats[accId] = { income: 0, expense: 0, balance: 0 };
+    }
+
+    for (const m of this.movements()) {
+      const accId = m.account || 'efectivo';
+      if (!stats[accId]) {
+        stats[accId] = { income: 0, expense: 0, balance: 0 };
+      }
+      if (m.type === 'income') {
+        const accId = m.account || 'efectivo';
+        if (!stats[accId]) stats[accId] = { income: 0, expense: 0, balance: 0 };
+        stats[accId].income += m.amount;
+        stats[accId].balance += m.amount;
+      } else if (m.type === 'expense') {
+        const accId = m.account || 'efectivo';
+        if (!stats[accId]) stats[accId] = { income: 0, expense: 0, balance: 0 };
+        stats[accId].expense += m.amount;
+        stats[accId].balance -= m.amount;
+      } else if (m.type === 'transfer') {
+        const fromAcc = m.account || 'efectivo';
+        const toAcc = m.toAccount || 'efectivo';
+        if (!stats[fromAcc]) stats[fromAcc] = { income: 0, expense: 0, balance: 0 };
+        if (!stats[toAcc]) stats[toAcc] = { income: 0, expense: 0, balance: 0 };
+        stats[fromAcc].balance -= m.amount;
+        stats[toAcc].balance += m.amount;
+      }
+    }
+
+    return Object.entries(stats).map(([id, data]) => {
+      const info = ACCOUNTS[id] || ACCOUNTS['otra'];
+      return {
+        id,
+        name: info.name,
+        type: info.type,
+        balance: data.balance,
+        income: data.income,
+        expense: data.expense,
+        badgeBg: info.badgeBg,
+        badgeText: info.badgeText
+      };
+    });
+  });
+
   // Filtered Movements for Table / List
   readonly filteredMovements = computed(() => {
     const typeFilter = this.selectedTypeFilter();
     const categoryFilter = this.selectedCategoryFilter();
+    const accountFilter = this.selectedAccountFilter();
     const search = this.searchTerm().trim().toLowerCase();
 
     return this.movements().filter((m) => {
       const matchesType = typeFilter === 'all' || m.type === typeFilter;
       const matchesCategory = categoryFilter === 'all' || m.category === categoryFilter;
+      const matchesAccount =
+        accountFilter === 'all' ||
+        (m.account || 'efectivo') === accountFilter ||
+        (m.type === 'transfer' && m.toAccount === accountFilter);
       const matchesSearch =
         search === '' ||
         m.title.toLowerCase().includes(search) ||
-        (CATEGORIES[m.category] && CATEGORIES[m.category].name.toLowerCase().includes(search));
+        (CATEGORIES[m.category] && CATEGORIES[m.category].name.toLowerCase().includes(search)) ||
+        (ACCOUNTS[m.account] && ACCOUNTS[m.account].name.toLowerCase().includes(search)) ||
+        (m.toAccount && ACCOUNTS[m.toAccount] && ACCOUNTS[m.toAccount].name.toLowerCase().includes(search));
 
-      return matchesType && matchesCategory && matchesSearch;
+      return matchesType && matchesCategory && matchesAccount && matchesSearch;
     });
   });
 
@@ -159,11 +229,18 @@ export class FinanceService {
 
   // Actions
   openModal(): void {
+    this.editingMovement.set(null);
+    this.isModalOpen.set(true);
+  }
+
+  openEditModal(movement: Movement): void {
+    this.editingMovement.set(movement);
     this.isModalOpen.set(true);
   }
 
   closeModal(): void {
     this.isModalOpen.set(false);
+    this.editingMovement.set(null);
   }
 
   async addMovement(newMovement: Omit<Movement, 'id'>): Promise<void> {
@@ -174,6 +251,8 @@ export class FinanceService {
         amount: Number(newMovement.amount),
         type: newMovement.type,
         category: newMovement.category,
+        account: newMovement.account || 'efectivo',
+        toAccount: newMovement.toAccount || '',
         date: newMovement.date,
         createdAt: serverTimestamp()
       });
@@ -186,6 +265,33 @@ export class FinanceService {
         );
       } else {
         alert(`Error al guardar en Cloud Firestore: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async updateMovement(id: string, updatedMovement: Omit<Movement, 'id'>): Promise<void> {
+    try {
+      const docRef = doc(firestore, 'movements', id);
+      await updateDoc(docRef, {
+        title: updatedMovement.title,
+        amount: Number(updatedMovement.amount),
+        type: updatedMovement.type,
+        category: updatedMovement.category,
+        account: updatedMovement.account || 'efectivo',
+        toAccount: updatedMovement.toAccount || '',
+        date: updatedMovement.date,
+        updatedAt: serverTimestamp()
+      });
+      this.closeModal();
+    } catch (error: any) {
+      console.error('Error al actualizar movimiento en Firestore:', error);
+      if (error.code === 'permission-denied') {
+        alert(
+          '⚠️ Error de permisos en Firebase: Tus reglas actuales bloquean la actualización ("allow write: if false;").'
+        );
+      } else {
+        alert(`Error al actualizar en Cloud Firestore: ${error.message}`);
       }
       throw error;
     }
@@ -208,12 +314,16 @@ export class FinanceService {
     }
   }
 
-  setTypeFilter(type: 'all' | 'income' | 'expense'): void {
+  setTypeFilter(type: 'all' | 'income' | 'expense' | 'transfer'): void {
     this.selectedTypeFilter.set(type);
   }
 
   setCategoryFilter(category: string): void {
     this.selectedCategoryFilter.set(category);
+  }
+
+  setAccountFilter(account: string): void {
+    this.selectedAccountFilter.set(account);
   }
 
   setSearchTerm(term: string): void {

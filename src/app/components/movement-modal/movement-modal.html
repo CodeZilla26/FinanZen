@@ -17,12 +17,25 @@
         <!-- Header -->
         <div class="px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">
-              +
+            <div 
+              class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm"
+              [class]="isEditing ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400'"
+            >
+              @if (isEditing) {
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              } @else {
+                +
+              }
             </div>
             <div>
-              <h3 class="text-base font-bold text-slate-900 dark:text-white">Registrar Movimiento</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400">Añade un nuevo ingreso o gasto a tu registro</p>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white">
+                {{ isEditing ? 'Editar Movimiento' : 'Registrar Movimiento' }}
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">
+                {{ isEditing ? 'Modifica los datos del registro y guarda los cambios en Firestore' : 'Añade un nuevo ingreso o gasto a tu registro' }}
+              </p>
             </div>
           </div>
           <button 
@@ -39,22 +52,22 @@
         <!-- Form Body -->
         <form (ngSubmit)="onSubmit()" class="p-6 space-y-4 text-xs">
           
-          <!-- Type Switch (Income vs Expense) -->
+          <!-- Type Switch (Expense vs Income vs Transfer) -->
           <div>
             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tipo de Movimiento</label>
-            <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+            <div class="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
               <button
                 type="button"
                 (click)="setType('expense')"
                 [class]="type === 'expense' 
                   ? 'bg-rose-600 text-white shadow-sm font-bold' 
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium'"
-                class="py-2 rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer"
+                class="py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer text-[11px] sm:text-xs"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M17 13l-5 5m0 0l-5-5m5 5V6" />
                 </svg>
-                <span>Egreso / Gasto</span>
+                <span>Egreso</span>
               </button>
 
               <button
@@ -63,12 +76,26 @@
                 [class]="type === 'income' 
                   ? 'bg-emerald-600 text-white shadow-sm font-bold' 
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium'"
-                class="py-2 rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer"
+                class="py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer text-[11px] sm:text-xs"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M7 11l5-5m0 0l5 5m-5-5v12" />
                 </svg>
                 <span>Ingreso</span>
+              </button>
+
+              <button
+                type="button"
+                (click)="setType('transfer')"
+                [class]="type === 'transfer' 
+                  ? 'bg-sky-600 text-white shadow-sm font-bold' 
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium'"
+                class="py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer text-[11px] sm:text-xs"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                <span>Transferencia</span>
               </button>
             </div>
           </div>
@@ -101,36 +128,92 @@
               required
               [(ngModel)]="title"
               name="title"
-              placeholder="Ej: Salario mensual, Compra de víveres, Alquiler..."
+              [placeholder]="type === 'transfer' ? 'Ej: Retiro en cajero, Envío de fondos a BCP...' : 'Ej: Salario mensual, Compra de víveres, Alquiler...'"
               class="w-full px-3.5 py-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
             />
           </div>
 
-          <!-- Category & Date in 2 columns -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Categoría</label>
-              <select
-                [(ngModel)]="category"
-                name="category"
-                class="w-full px-3 py-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-slate-200 cursor-pointer"
-              >
-                @for (cat of categories; track cat.id) {
-                  <option [value]="cat.id">{{ cat.name }}</option>
-                }
-              </select>
-            </div>
+          <!-- Accounts Selection -->
+          @if (type === 'transfer') {
+            <!-- Transfer: Origin & Destination Accounts -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-sky-50/60 dark:bg-sky-950/20 rounded-xl border border-sky-100 dark:border-sky-900/40">
+              <div>
+                <label class="block font-semibold text-sky-900 dark:text-sky-300 mb-1">
+                  📤 Cuenta Origen (Sale el dinero)
+                </label>
+                <select
+                  [(ngModel)]="account"
+                  name="account"
+                  class="w-full px-3 py-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-800 dark:text-slate-200 cursor-pointer font-medium"
+                >
+                  @for (acc of accounts; track acc.id) {
+                    <option [value]="acc.id">{{ acc.name }}</option>
+                  }
+                </select>
+              </div>
 
-            <div>
-              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Fecha</label>
-              <input
-                type="date"
-                required
-                [(ngModel)]="date"
-                name="date"
-                class="w-full px-3 py-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-slate-200"
-              />
+              <div>
+                <label class="block font-semibold text-sky-900 dark:text-sky-300 mb-1">
+                  📥 Cuenta Destino (Ingresa el dinero)
+                </label>
+                <select
+                  [(ngModel)]="toAccount"
+                  name="toAccount"
+                  class="w-full px-3 py-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-800 dark:text-slate-200 cursor-pointer font-medium"
+                >
+                  @for (acc of accounts; track acc.id) {
+                    <option [value]="acc.id" [disabled]="acc.id === account">
+                      {{ acc.name }} {{ acc.id === account ? '(Origen)' : '' }}
+                    </option>
+                  }
+                </select>
+              </div>
             </div>
+          } @else {
+            <!-- Income/Expense: Category & Account in 2 columns -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Categoría</label>
+                <select
+                  [(ngModel)]="category"
+                  name="category"
+                  class="w-full px-3 py-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-slate-200 cursor-pointer"
+                >
+                  @for (cat of categories; track cat.id) {
+                    @if (cat.id !== 'transferencia') {
+                      <option [value]="cat.id">{{ cat.name }}</option>
+                    }
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  {{ type === 'income' ? '¿Dónde ingresa el dinero?' : '¿De qué cuenta sale el dinero?' }}
+                </label>
+                <select
+                  [(ngModel)]="account"
+                  name="account"
+                  class="w-full px-3 py-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-slate-200 cursor-pointer font-medium"
+                >
+                  @for (acc of accounts; track acc.id) {
+                    <option [value]="acc.id">{{ acc.name }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+          }
+
+          <!-- Date Input -->
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Fecha</label>
+            <input
+              type="date"
+              required
+              [(ngModel)]="date"
+              name="date"
+              class="w-full px-3 py-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-slate-200"
+            />
           </div>
 
           <!-- Footer Buttons -->
@@ -146,14 +229,18 @@
               type="submit"
               [disabled]="isSaving() || !title.trim() || !amount || amount <= 0"
               class="inline-flex items-center gap-2 px-5 py-2 text-xs font-semibold text-white rounded-xl shadow-sm transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              [class]="type === 'income' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'"
+              [class]="type === 'transfer' ? 'bg-sky-600 hover:bg-sky-700' : (type === 'income' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700')"
             >
               @if (isSaving()) {
                 <svg class="animate-spin -ml-1 mr-1 h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                 </svg>
-                <span>Guardando en Firestore...</span>
+                <span>{{ isEditing ? 'Actualizando en Firestore...' : 'Guardando en Firestore...' }}</span>
+              } @else if (isEditing) {
+                <span>Actualizar Movimiento</span>
+              } @else if (type === 'transfer') {
+                <span>Guardar Transferencia</span>
               } @else {
                 <span>Guardar {{ type === 'income' ? 'Ingreso' : 'Egreso' }}</span>
               }

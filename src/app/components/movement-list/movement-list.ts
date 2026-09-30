@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FinanceService } from '../../services/finance.service';
-import { Movement, CATEGORIES, CategoryInfo } from '../../models/movement.model';
+import { Movement, CATEGORIES, CategoryInfo, ACCOUNTS, AccountInfo } from '../../models/movement.model';
 
 @Component({
   selector: 'app-movement-list',
@@ -14,14 +14,17 @@ export class MovementListComponent {
   protected readonly financeService = inject(FinanceService);
 
   readonly categories = Object.values(CATEGORIES);
+  readonly accounts = Object.values(ACCOUNTS);
+
   searchQuery = '';
   selectedCategory = 'all';
+  selectedAccount = 'all';
 
   get filteredMovements(): Movement[] {
     return this.financeService.filteredMovements();
   }
 
-  get currentTypeFilter(): 'all' | 'income' | 'expense' {
+  get currentTypeFilter(): 'all' | 'income' | 'expense' | 'transfer' {
     return this.financeService.selectedTypeFilter();
   }
 
@@ -37,6 +40,10 @@ export class MovementListComponent {
     return this.financeService.movements().filter((m) => m.type === 'expense').length;
   }
 
+  get transferCount(): number {
+    return this.financeService.movements().filter((m) => m.type === 'transfer').length;
+  }
+
   get isLoading(): boolean {
     return this.financeService.isLoading();
   }
@@ -45,7 +52,7 @@ export class MovementListComponent {
     return this.financeService.errorMessage();
   }
 
-  onTypeChange(type: 'all' | 'income' | 'expense'): void {
+  onTypeChange(type: 'all' | 'income' | 'expense' | 'transfer'): void {
     this.financeService.setTypeFilter(type);
   }
 
@@ -55,6 +62,14 @@ export class MovementListComponent {
 
   onCategoryChange(): void {
     this.financeService.setCategoryFilter(this.selectedCategory);
+  }
+
+  onAccountChange(): void {
+    this.financeService.setAccountFilter(this.selectedAccount);
+  }
+
+  onEdit(item: Movement): void {
+    this.financeService.openEditModal(item);
   }
 
   async onDelete(id: string): Promise<void> {
@@ -69,5 +84,9 @@ export class MovementListComponent {
 
   getCategoryInfo(catId: string): CategoryInfo {
     return CATEGORIES[catId] || CATEGORIES['otros'];
+  }
+
+  getAccountInfo(accId: string): AccountInfo {
+    return ACCOUNTS[accId] || ACCOUNTS['otra'];
   }
 }

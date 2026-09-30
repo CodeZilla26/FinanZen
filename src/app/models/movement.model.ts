@@ -1,4 +1,4 @@
-export type MovementType = 'income' | 'expense';
+export type MovementType = 'income' | 'expense' | 'transfer';
 
 export interface Movement {
   id: string;
@@ -6,8 +6,70 @@ export interface Movement {
   amount: number;
   type: MovementType;
   category: string;
+  account: string; // Cuenta origen: 'efectivo', 'bcp', 'bbva', 'interbank', 'yape_plin', 'otra'
+  toAccount?: string; // Cuenta destino (requerida cuando type === 'transfer')
   date: string; // YYYY-MM-DD
 }
+
+export interface AccountInfo {
+  id: string;
+  name: string;
+  type: 'efectivo' | 'banco' | 'billetera';
+  icon: string;
+  badgeBg: string;
+  badgeText: string;
+}
+
+export const ACCOUNTS: Record<string, AccountInfo> = {
+  efectivo: {
+    id: 'efectivo',
+    name: 'Efectivo',
+    type: 'efectivo',
+    icon: 'cash',
+    badgeBg: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800',
+    badgeText: 'text-emerald-800 dark:text-emerald-300'
+  },
+  bcp: {
+    id: 'bcp',
+    name: 'Cuenta BCP',
+    type: 'banco',
+    icon: 'bank',
+    badgeBg: 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800',
+    badgeText: 'text-blue-800 dark:text-blue-300'
+  },
+  bbva: {
+    id: 'bbva',
+    name: 'Cuenta BBVA',
+    type: 'banco',
+    icon: 'bank',
+    badgeBg: 'bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800',
+    badgeText: 'text-sky-800 dark:text-sky-300'
+  },
+  interbank: {
+    id: 'interbank',
+    name: 'Cuenta Interbank',
+    type: 'banco',
+    icon: 'bank',
+    badgeBg: 'bg-green-50 text-green-800 border-green-200 dark:bg-green-950/40 dark:text-green-300 dark:border-green-800',
+    badgeText: 'text-green-800 dark:text-green-300'
+  },
+  yape_plin: {
+    id: 'yape_plin',
+    name: 'Yape / Plin',
+    type: 'billetera',
+    icon: 'smartphone',
+    badgeBg: 'bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800',
+    badgeText: 'text-purple-800 dark:text-purple-300'
+  },
+  otra: {
+    id: 'otra',
+    name: 'Otra Cuenta',
+    type: 'banco',
+    icon: 'credit-card',
+    badgeBg: 'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+    badgeText: 'text-slate-800 dark:text-slate-300'
+  }
+};
 
 export interface CategoryInfo {
   id: string;
@@ -90,6 +152,22 @@ export const CATEGORIES: Record<string, CategoryInfo> = {
     color: '#6366f1',
     badgeBg: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800',
     badgeText: 'text-indigo-700'
+  },
+  deudas: {
+    id: 'deudas',
+    name: 'Pago de Deudas & Préstamos',
+    icon: 'credit-card',
+    color: '#ea580c',
+    badgeBg: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800',
+    badgeText: 'text-orange-700'
+  },
+  transferencia: {
+    id: 'transferencia',
+    name: 'Transferencia entre Cuentas',
+    icon: 'repeat',
+    color: '#0284c7',
+    badgeBg: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800',
+    badgeText: 'text-sky-700'
   },
   otros: {
     id: 'otros',
