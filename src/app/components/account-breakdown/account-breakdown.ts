@@ -18,4 +18,16 @@ export class AccountBreakdownComponent {
   get totalBalance(): number {
     return this.financeService.totalBalance();
   }
+
+  rechargeTrainCard(): void {
+    this.financeService.openTransferModal('efectivo', 'tarjeta_tren', 'Recarga Tarjeta del Tren');
+  }
+
+  withdrawCash(): void {
+    this.financeService.openTransferModal('bcp', 'efectivo', 'Retiro de efectivo en cajero');
+  }
+
+  openTransfer(): void {
+    this.financeService.openTransferModal('efectivo', 'tarjeta_tren', 'Recarga Tarjeta del Tren');
+  }
 }

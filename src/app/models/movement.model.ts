@@ -14,7 +14,7 @@ export interface Movement {
 export interface AccountInfo {
   id: string;
   name: string;
-  type: 'efectivo' | 'banco' | 'billetera';
+  type: 'efectivo' | 'banco' | 'billetera' | 'transporte';
   icon: string;
   badgeBg: string;
   badgeText: string;
@@ -28,6 +28,14 @@ export const ACCOUNTS: Record<string, AccountInfo> = {
     icon: 'cash',
     badgeBg: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800',
     badgeText: 'text-emerald-800 dark:text-emerald-300'
+  },
+  tarjeta_tren: {
+    id: 'tarjeta_tren',
+    name: 'Tarjeta del Tren',
+    type: 'transporte',
+    icon: 'train',
+    badgeBg: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
+    badgeText: 'text-amber-800 dark:text-amber-300'
   },
   bcp: {
     id: 'bcp',

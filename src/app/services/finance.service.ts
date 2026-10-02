@@ -24,12 +24,20 @@ export interface CategoryBreakdownItem {
 export interface AccountSummaryItem {
   id: string;
   name: string;
-  type: 'efectivo' | 'banco' | 'billetera';
+  type: 'efectivo' | 'banco' | 'billetera' | 'transporte';
   balance: number;
   income: number;
   expense: number;
   badgeBg: string;
   badgeText: string;
+}
+
+export interface ModalPreset {
+  type?: MovementType;
+  account?: string;
+  toAccount?: string;
+  title?: string;
+  amount?: number | null;
 }
 
 @Injectable({
@@ -49,6 +57,7 @@ export class FinanceService {
   readonly searchTerm = signal<string>('');
   readonly isModalOpen = signal<boolean>(false);
   readonly editingMovement = signal<Movement | null>(null);
+  readonly initialModalPreset = signal<ModalPreset | null>(null);
 
   constructor() {
     this.listenToMovements();
@@ -261,12 +270,29 @@ export class FinanceService {
   });
 
   // Actions
-  openModal(): void {
+  openModal(preset?: ModalPreset): void {
     this.editingMovement.set(null);
+    this.initialModalPreset.set(preset || null);
+    this.isModalOpen.set(true);
+  }
+
+  openTransferModal(
+    fromAccount: string = 'efectivo',
+    toAccount: string = 'tarjeta_tren',
+    defaultTitle: string = 'Recarga Tarjeta del Tren'
+  ): void {
+    this.editingMovement.set(null);
+    this.initialModalPreset.set({
+      type: 'transfer',
+      account: fromAccount,
+      toAccount: toAccount,
+      title: defaultTitle
+    });
     this.isModalOpen.set(true);
   }
 
   openEditModal(movement: Movement): void {
+    this.initialModalPreset.set(null);
     this.editingMovement.set(movement);
     this.isModalOpen.set(true);
   }
@@ -274,6 +300,7 @@ export class FinanceService {
   closeModal(): void {
     this.isModalOpen.set(false);
     this.editingMovement.set(null);
+    this.initialModalPreset.set(null);
   }
 
   async addMovement(newMovement: Omit<Movement, 'id'>): Promise<void> {
