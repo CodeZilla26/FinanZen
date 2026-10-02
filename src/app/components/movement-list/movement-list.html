@@ -287,7 +287,12 @@
                       class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] border"
                       [class]="getAccountInfo(item.account).badgeBg"
                     >
-                      {{ getAccountInfo(item.account).name }}
+                      @if (item.account === 'efectivo') {
+                        <span>💵</span>
+                      } @else if (item.account === 'tarjeta_tren') {
+                        <span>🚆</span>
+                      }
+                      <span>{{ getAccountInfo(item.account).name }}</span>
                     </span>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -296,7 +301,12 @@
                       class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] border"
                       [class]="getAccountInfo(item.toAccount || 'efectivo').badgeBg"
                     >
-                      {{ getAccountInfo(item.toAccount || 'efectivo').name }}
+                      @if ((item.toAccount || 'efectivo') === 'efectivo') {
+                        <span>💵</span>
+                      } @else if ((item.toAccount || 'efectivo') === 'tarjeta_tren') {
+                        <span>🚆</span>
+                      }
+                      <span>{{ getAccountInfo(item.toAccount || 'efectivo').name }}</span>
                     </span>
                   </div>
                 } @else {
@@ -306,6 +316,8 @@
                   >
                     @if (getAccountInfo(item.account).type === 'efectivo') {
                       <span>💵</span>
+                    } @else if (getAccountInfo(item.account).type === 'tarjeta' || item.account === 'tarjeta_tren') {
+                      <span>🚆</span>
                     } @else if (getAccountInfo(item.account).type === 'billetera') {
                       <span>📱</span>
                     } @else {

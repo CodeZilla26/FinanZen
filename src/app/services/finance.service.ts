@@ -24,7 +24,7 @@ export interface CategoryBreakdownItem {
 export interface AccountSummaryItem {
   id: string;
   name: string;
-  type: 'efectivo' | 'banco' | 'billetera' | 'transporte';
+  type: 'efectivo' | 'banco' | 'billetera' | 'tarjeta';
   balance: number;
   income: number;
   expense: number;
@@ -37,7 +37,8 @@ export interface ModalPreset {
   account?: string;
   toAccount?: string;
   title?: string;
-  amount?: number | null;
+  amount?: number;
+  category?: string;
 }
 
 @Injectable({
@@ -57,7 +58,7 @@ export class FinanceService {
   readonly searchTerm = signal<string>('');
   readonly isModalOpen = signal<boolean>(false);
   readonly editingMovement = signal<Movement | null>(null);
-  readonly initialModalPreset = signal<ModalPreset | null>(null);
+  readonly modalPreset = signal<ModalPreset | null>(null);
 
   constructor() {
     this.listenToMovements();
@@ -272,27 +273,32 @@ export class FinanceService {
   // Actions
   openModal(preset?: ModalPreset): void {
     this.editingMovement.set(null);
-    this.initialModalPreset.set(preset || null);
+    this.modalPreset.set(preset || null);
     this.isModalOpen.set(true);
   }
 
-  openTransferModal(
-    fromAccount: string = 'efectivo',
-    toAccount: string = 'tarjeta_tren',
-    defaultTitle: string = 'Recarga Tarjeta del Tren'
-  ): void {
-    this.editingMovement.set(null);
-    this.initialModalPreset.set({
+  openTransferModal(account = 'bcp', toAccount = 'efectivo', title = 'Retiro de cajero a efectivo'): void {
+    this.openModal({
       type: 'transfer',
-      account: fromAccount,
-      toAccount: toAccount,
-      title: defaultTitle
+      account,
+      toAccount,
+      title,
+      category: 'transferencia'
     });
-    this.isModalOpen.set(true);
+  }
+
+  openTrainCardRechargeModal(): void {
+    this.openModal({
+      type: 'transfer',
+      account: 'efectivo',
+      toAccount: 'tarjeta_tren',
+      title: 'Recarga Tarjeta del Tren',
+      category: 'transferencia'
+    });
   }
 
   openEditModal(movement: Movement): void {
-    this.initialModalPreset.set(null);
+    this.modalPreset.set(null);
     this.editingMovement.set(movement);
     this.isModalOpen.set(true);
   }
@@ -300,7 +306,7 @@ export class FinanceService {
   closeModal(): void {
     this.isModalOpen.set(false);
     this.editingMovement.set(null);
-    this.initialModalPreset.set(null);
+    this.modalPreset.set(null);
   }
 
   async addMovement(newMovement: Omit<Movement, 'id'>): Promise<void> {

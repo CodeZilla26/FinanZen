@@ -100,6 +100,55 @@
             </div>
           </div>
 
+          <!-- Transfer Mode Quick Presets -->
+          @if (type === 'transfer' && !isEditing) {
+            <div class="p-3 rounded-xl bg-sky-50/70 dark:bg-sky-950/30 border border-sky-100 dark:border-sky-900/50 space-y-2">
+              <span class="block text-[11px] font-bold text-sky-900 dark:text-sky-200">
+                ⚡ Atajos rápidos de transferencia:
+              </span>
+              <div class="flex flex-wrap gap-2">
+                <!-- Preset 1: Retiro a Efectivo -->
+                <button
+                  type="button"
+                  (click)="applyPresetWithdrawal()"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition cursor-pointer border"
+                  [class]="toAccount === 'efectivo' && account !== 'efectivo'
+                    ? 'bg-sky-600 text-white border-sky-600 shadow-2xs font-bold'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'"
+                >
+                  <span>🏧</span>
+                  <span>Retiro a Efectivo</span>
+                </button>
+
+                <!-- Preset 2: Recarga Tarjeta Tren -->
+                <button
+                  type="button"
+                  (click)="applyPresetTrainRecharge()"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition cursor-pointer border"
+                  [class]="account === 'efectivo' && toAccount === 'tarjeta_tren'
+                    ? 'bg-cyan-600 text-white border-cyan-600 shadow-2xs font-bold'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'"
+                >
+                  <span>🚆</span>
+                  <span>Recarga Tarjeta Tren</span>
+                </button>
+
+                <!-- Preset 3: Entre Bancos / Billeteras -->
+                <button
+                  type="button"
+                  (click)="applyPresetBankTransfer()"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition cursor-pointer border"
+                  [class]="account !== 'efectivo' && toAccount !== 'efectivo' && toAccount !== 'tarjeta_tren'
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs font-bold'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'"
+                >
+                  <span>🔄</span>
+                  <span>Entre Cuentas</span>
+                </button>
+              </div>
+            </div>
+          }
+
           <!-- Amount Input -->
           <div>
             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Monto (S/)</label>
@@ -128,110 +177,74 @@
               required
               [(ngModel)]="title"
               name="title"
-              [placeholder]="type === 'transfer' ? 'Ej: Retiro en cajero, Envío de fondos a BCP...' : 'Ej: Salario mensual, Compra de víveres, Alquiler...'"
+              [placeholder]="type === 'transfer' ? 'Ej: Retiro en cajero BCP, Recarga Tarjeta Tren...' : 'Ej: Salario mensual, Compra de víveres, Alquiler...'"
               class="w-full px-3.5 py-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
             />
           </div>
 
           <!-- Accounts Selection -->
           @if (type === 'transfer') {
-            <!-- Transfer Shortcuts & Accounts Selection -->
-            <div class="space-y-3">
-              <div>
-                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Atajos rápidos de transferencia
-                </label>
-                <div class="grid grid-cols-3 gap-1.5 text-[11px]">
-                  <button
-                    type="button"
-                    (click)="applyTransferPreset('train')"
-                    [class]="isTrainCardTransfer 
-                      ? 'bg-amber-100 dark:bg-amber-950/60 border-amber-400 dark:border-amber-700 text-amber-900 dark:text-amber-200 font-bold shadow-xs' 
-                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/60'"
-                    class="p-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition text-center cursor-pointer"
+            <!-- Transfer: Origin & Destination Accounts -->
+            <div class="space-y-2.5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-sky-50/60 dark:bg-sky-950/20 rounded-xl border border-sky-100 dark:border-sky-900/40">
+                <div>
+                  <label class="block font-semibold text-sky-900 dark:text-sky-300 mb-1">
+                    📤 Cuenta Origen (Sale el dinero)
+                  </label>
+                  <select
+                    [(ngModel)]="account"
+                    name="account"
+                    class="w-full px-3 py-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-800 dark:text-slate-200 cursor-pointer font-medium"
                   >
-                    <span class="text-base">🚆</span>
-                    <span class="leading-tight">Recargar Tren</span>
-                  </button>
+                    @for (acc of accounts; track acc.id) {
+                      <option [value]="acc.id">{{ acc.name }}</option>
+                    }
+                  </select>
+                </div>
 
-                  <button
-                    type="button"
-                    (click)="applyTransferPreset('withdrawal')"
-                    [class]="isCashWithdrawal 
-                      ? 'bg-emerald-100 dark:bg-emerald-950/60 border-emerald-400 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 font-bold shadow-xs' 
-                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/60'"
-                    class="p-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition text-center cursor-pointer"
+                <div>
+                  <label class="block font-semibold text-sky-900 dark:text-sky-300 mb-1">
+                    📥 Cuenta Destino (Ingresa el dinero)
+                  </label>
+                  <select
+                    [(ngModel)]="toAccount"
+                    name="toAccount"
+                    class="w-full px-3 py-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-800 dark:text-slate-200 cursor-pointer font-medium"
                   >
-                    <span class="text-base">🏧</span>
-                    <span class="leading-tight">Retiro Cajero</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    (click)="applyTransferPreset('general')"
-                    [class]="!isTrainCardTransfer && !isCashWithdrawal 
-                      ? 'bg-sky-100 dark:bg-sky-950/60 border-sky-400 dark:border-sky-700 text-sky-900 dark:text-sky-200 font-bold shadow-xs' 
-                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/60'"
-                    class="p-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition text-center cursor-pointer"
-                  >
-                    <span class="text-base">🔄</span>
-                    <span class="leading-tight">Entre Cuentas</span>
-                  </button>
+                    @for (acc of accounts; track acc.id) {
+                      <option [value]="acc.id" [disabled]="acc.id === account">
+                        {{ acc.name }} {{ acc.id === account ? '(Origen seleccionado)' : '' }}
+                      </option>
+                    }
+                  </select>
                 </div>
               </div>
 
-              <!-- Transfer: Origin & Destination Accounts -->
-              <div class="p-3 bg-sky-50/60 dark:bg-sky-950/20 rounded-xl border border-sky-100 dark:border-sky-900/40 space-y-3">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Contextual helper alert explaining what this transfer does -->
+              <div class="p-3 rounded-xl border text-[11px] leading-relaxed flex items-start gap-2.5 bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                @if (account === 'efectivo' && toAccount === 'tarjeta_tren') {
+                  <span class="text-base shrink-0">🚆</span>
                   <div>
-                    <label class="block font-semibold text-sky-900 dark:text-sky-300 mb-1">
-                      📤 Cuenta Origen (Sale el dinero)
-                    </label>
-                    <select
-                      [(ngModel)]="account"
-                      name="account"
-                      class="w-full px-3 py-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-800 dark:text-slate-200 cursor-pointer font-medium"
-                    >
-                      @for (acc of accounts; track acc.id) {
-                        <option [value]="acc.id">{{ acc.name }}</option>
-                      }
-                    </select>
+                    <strong class="text-cyan-700 dark:text-cyan-400 font-bold">Recarga Tarjeta del Tren:</strong>
+                    <span> El dinero saldrá de tu <strong>Efectivo</strong> en físico y se cargará automáticamente como saldo disponible de tu <strong>Tarjeta del Tren</strong>.</span>
                   </div>
-
+                } @else if (toAccount === 'efectivo') {
+                  <span class="text-base shrink-0">🏧</span>
                   <div>
-                    <label class="block font-semibold text-sky-900 dark:text-sky-300 mb-1">
-                      📥 Cuenta Destino (Ingresa el dinero)
-                    </label>
-                    <select
-                      [(ngModel)]="toAccount"
-                      name="toAccount"
-                      (change)="onToAccountChange()"
-                      class="w-full px-3 py-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-800 dark:text-slate-200 cursor-pointer font-medium"
-                    >
-                      @for (acc of accounts; track acc.id) {
-                        <option [value]="acc.id" [disabled]="acc.id === account">
-                          {{ acc.name }} {{ acc.id === account ? '(Origen)' : '' }}
-                        </option>
-                      }
-                    </select>
+                    <strong class="text-emerald-700 dark:text-emerald-400 font-bold">Retiro de Efectivo:</strong>
+                    <span> Retirarás dinero de <strong>{{ getAccountInfo(account).name }}</strong> (cajero o ventanilla) para tenerlo en físico como <strong>Efectivo</strong>.</span>
                   </div>
-                </div>
-
-                <!-- Explanation Banner -->
-                @if (isTrainCardTransfer) {
-                  <div class="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-[11px] flex items-center gap-2">
-                    <span class="text-base shrink-0">🚆</span>
-                    <span><strong>Recarga de Tarjeta del Tren:</strong> El dinero sale de tu <strong>Efectivo</strong> (💵) y recarga tu tarjeta del tren para pasajes diarios.</span>
-                  </div>
-                } @else if (isCashWithdrawal) {
-                  <div class="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200 text-[11px] flex items-center gap-2">
-                    <span class="text-base shrink-0">🏧</span>
-                    <span><strong>Retiro de Efectivo en Cajero:</strong> El dinero sale de <strong>{{ getAccountName(account) }}</strong> y pasa a tu <strong>Efectivo</strong> disponible en mano.</span>
+                } @else if (account === 'efectivo') {
+                  <span class="text-base shrink-0">💰</span>
+                  <div>
+                    <strong class="text-indigo-700 dark:text-indigo-400 font-bold">Depósito a Cuenta:</strong>
+                    <span> Depositarás dinero de tu <strong>Efectivo</strong> físico hacia tu <strong>{{ getAccountInfo(toAccount).name }}</strong>.</span>
                   </div>
                 } @else {
-                  <div class="p-2.5 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/60 text-sky-900 dark:text-sky-200 text-[11px] flex items-center gap-2">
-                    <span class="text-base shrink-0">🔄</span>
-                    <span><strong>Transferencia Interna:</strong> Se mueven fondos de <strong>{{ getAccountName(account) }}</strong> hacia <strong>{{ getAccountName(toAccount) }}</strong>.</span>
+                  <span class="text-base shrink-0">🔄</span>
+                  <div>
+                    <strong class="text-sky-700 dark:text-sky-400 font-bold">Transferencia entre Cuentas:</strong>
+                    <span> Traspaso directo de fondos desde <strong>{{ getAccountInfo(account).name }}</strong> hacia <strong>{{ getAccountInfo(toAccount).name }}</strong> sin modificar tu balance total.</span>
                   </div>
                 }
               </div>

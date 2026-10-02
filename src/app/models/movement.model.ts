@@ -14,7 +14,7 @@ export interface Movement {
 export interface AccountInfo {
   id: string;
   name: string;
-  type: 'efectivo' | 'banco' | 'billetera' | 'transporte';
+  type: 'efectivo' | 'banco' | 'billetera' | 'tarjeta';
   icon: string;
   badgeBg: string;
   badgeText: string;
@@ -32,10 +32,10 @@ export const ACCOUNTS: Record<string, AccountInfo> = {
   tarjeta_tren: {
     id: 'tarjeta_tren',
     name: 'Tarjeta del Tren',
-    type: 'transporte',
+    type: 'tarjeta',
     icon: 'train',
-    badgeBg: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
-    badgeText: 'text-amber-800 dark:text-amber-300'
+    badgeBg: 'bg-cyan-50 text-cyan-800 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800',
+    badgeText: 'text-cyan-800 dark:text-cyan-300'
   },
   bcp: {
     id: 'bcp',

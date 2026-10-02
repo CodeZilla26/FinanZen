@@ -20,14 +20,20 @@ export class AccountBreakdownComponent {
   }
 
   rechargeTrainCard(): void {
-    this.financeService.openTransferModal('efectivo', 'tarjeta_tren', 'Recarga Tarjeta del Tren');
+    this.financeService.openTrainCardRechargeModal();
   }
 
   withdrawCash(): void {
-    this.financeService.openTransferModal('bcp', 'efectivo', 'Retiro de efectivo en cajero');
+    this.financeService.openTransferModal('bcp', 'efectivo', 'Retiro de cajero a efectivo');
   }
 
   openTransfer(): void {
-    this.financeService.openTransferModal('efectivo', 'tarjeta_tren', 'Recarga Tarjeta del Tren');
+    this.financeService.openModal({
+      type: 'transfer',
+      account: 'bcp',
+      toAccount: 'yape_plin',
+      title: 'Transferencia entre cuentas',
+      category: 'transferencia'
+    });
   }
 }

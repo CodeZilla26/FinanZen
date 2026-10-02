@@ -2,7 +2,7 @@ import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FinanceService } from '../../services/finance.service';
-import { MovementType, CATEGORIES, ACCOUNTS } from '../../models/movement.model';
+import { MovementType, CATEGORIES, ACCOUNTS, AccountInfo } from '../../models/movement.model';
 
 @Component({
   selector: 'app-movement-modal',
@@ -23,11 +23,11 @@ export class MovementModalComponent {
   amount: number | null = null;
   category = 'alimentacion';
   account = 'efectivo';
-  toAccount = 'tarjeta_tren';
+  toAccount = 'bcp';
   date = new Date().toISOString().substring(0, 10);
 
   constructor() {
-    // Sincroniza automáticamente los campos cuando se selecciona un movimiento para editar o se activa un preset
+    // Sincroniza automáticamente los campos cuando se selecciona un movimiento para editar o un preset
     effect(() => {
       const itemToEdit = this.financeService.editingMovement();
       if (itemToEdit) {
@@ -36,21 +36,20 @@ export class MovementModalComponent {
         this.amount = itemToEdit.amount;
         this.category = itemToEdit.category;
         this.account = itemToEdit.account || 'efectivo';
-        this.toAccount = itemToEdit.toAccount || (itemToEdit.account === 'efectivo' ? 'tarjeta_tren' : 'efectivo');
+        this.toAccount = itemToEdit.toAccount || (itemToEdit.account === 'efectivo' ? 'bcp' : 'efectivo');
         this.date = itemToEdit.date;
         return;
       }
 
-      const preset = this.financeService.initialModalPreset();
+      const preset = this.financeService.modalPreset();
       if (preset) {
         if (preset.type) this.type = preset.type;
+        if (preset.title !== undefined) this.title = preset.title;
+        if (preset.amount !== undefined) this.amount = preset.amount;
+        if (preset.category) this.category = preset.category;
         if (preset.account) this.account = preset.account;
         if (preset.toAccount) this.toAccount = preset.toAccount;
-        if (preset.title) this.title = preset.title;
-        if (preset.amount !== undefined && preset.amount !== null) this.amount = preset.amount;
-        if (preset.type === 'transfer') {
-          this.category = 'transferencia';
-        }
+        this.date = new Date().toISOString().substring(0, 10);
       }
     });
   }
@@ -63,14 +62,6 @@ export class MovementModalComponent {
     return this.financeService.editingMovement() !== null;
   }
 
-  get isTrainCardTransfer(): boolean {
-    return this.type === 'transfer' && this.toAccount === 'tarjeta_tren';
-  }
-
-  get isCashWithdrawal(): boolean {
-    return this.type === 'transfer' && this.toAccount === 'efectivo';
-  }
-
   setType(type: MovementType): void {
     this.type = type;
     if (type === 'income' && (this.category === 'alimentacion' || this.category === 'transferencia')) {
@@ -80,54 +71,42 @@ export class MovementModalComponent {
     } else if (type === 'transfer') {
       this.category = 'transferencia';
       if (this.account === this.toAccount) {
-        this.toAccount = this.account === 'efectivo' ? 'tarjeta_tren' : 'efectivo';
+        this.toAccount = this.account === 'efectivo' ? 'bcp' : 'efectivo';
       }
     }
   }
 
-  applyTransferPreset(preset: 'train' | 'withdrawal' | 'general'): void {
-    this.setType('transfer');
-    if (preset === 'train') {
-      this.account = 'efectivo';
-      this.toAccount = 'tarjeta_tren';
-      if (!this.title.trim() || this.title === 'Retiro de efectivo en cajero' || this.title === 'Transferencia entre cuentas') {
-        this.title = 'Recarga Tarjeta del Tren';
-      }
-    } else if (preset === 'withdrawal') {
-      if (this.account === 'efectivo' || this.account === 'tarjeta_tren') {
-        this.account = 'bcp';
-      }
-      this.toAccount = 'efectivo';
-      if (!this.title.trim() || this.title === 'Recarga Tarjeta del Tren' || this.title === 'Transferencia entre cuentas') {
-        this.title = 'Retiro de efectivo en cajero';
-      }
-    } else {
-      if (this.account === this.toAccount) {
-        this.toAccount = this.account === 'bcp' ? 'bbva' : 'bcp';
-      }
-      if (!this.title.trim() || this.title === 'Recarga Tarjeta del Tren' || this.title === 'Retiro de efectivo en cajero') {
-        this.title = 'Transferencia entre cuentas';
-      }
-    }
-  }
-
-  onToAccountChange(): void {
-    // Si el destino es la tarjeta del tren, según el requerimiento el dinero sale directamente de efectivo
-    if (this.toAccount === 'tarjeta_tren') {
-      this.account = 'efectivo';
-      if (!this.title.trim() || this.title === 'Retiro de efectivo en cajero' || this.title === 'Transferencia entre cuentas') {
-        this.title = 'Recarga Tarjeta del Tren';
-      }
-    } else if (this.toAccount === 'efectivo' && this.account === 'efectivo') {
+  // Atajos rápidos para transferencias comunes
+  applyPresetWithdrawal(): void {
+    this.type = 'transfer';
+    this.category = 'transferencia';
+    if (this.account === 'efectivo') {
       this.account = 'bcp';
-      if (!this.title.trim() || this.title === 'Recarga Tarjeta del Tren') {
-        this.title = 'Retiro de efectivo en cajero';
-      }
     }
+    this.toAccount = 'efectivo';
+    this.title = 'Retiro de cajero a efectivo';
   }
 
-  getAccountName(accId: string): string {
-    return ACCOUNTS[accId]?.name || accId;
+  applyPresetTrainRecharge(): void {
+    this.type = 'transfer';
+    this.category = 'transferencia';
+    this.account = 'efectivo';
+    this.toAccount = 'tarjeta_tren';
+    this.title = 'Recarga Tarjeta del Tren';
+  }
+
+  applyPresetBankTransfer(): void {
+    this.type = 'transfer';
+    this.category = 'transferencia';
+    if (this.account === 'efectivo' || this.account === 'tarjeta_tren') {
+      this.account = 'bcp';
+    }
+    this.toAccount = 'yape_plin';
+    this.title = 'Transferencia entre cuentas';
+  }
+
+  getAccountInfo(accId: string): AccountInfo {
+    return ACCOUNTS[accId] || ACCOUNTS['otra'];
   }
 
   close(): void {
