@@ -44,6 +44,8 @@ export class FinanceService {
   readonly selectedTypeFilter = signal<'all' | 'income' | 'expense' | 'transfer'>('all');
   readonly selectedCategoryFilter = signal<string>('all');
   readonly selectedAccountFilter = signal<string>('all');
+  readonly selectedStartDate = signal<string>('');
+  readonly selectedEndDate = signal<string>('');
   readonly searchTerm = signal<string>('');
   readonly isModalOpen = signal<boolean>(false);
   readonly editingMovement = signal<Movement | null>(null);
@@ -128,6 +130,32 @@ export class FinanceService {
     return Math.round((balance / income) * 100);
   });
 
+  /**
+   * Retorna la fecha local actual en formato ISO 'YYYY-MM-DD'.
+   */
+  getTodayDateString(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // Métricas del día actual
+  readonly todayExpense = computed(() => {
+    const today = this.getTodayDateString();
+    return this.movements()
+      .filter((m) => m.type === 'expense' && m.date === today)
+      .reduce((sum, m) => sum + m.amount, 0);
+  });
+
+  readonly todayIncome = computed(() => {
+    const today = this.getTodayDateString();
+    return this.movements()
+      .filter((m) => m.type === 'income' && m.date === today)
+      .reduce((sum, m) => sum + m.amount, 0);
+  });
+
   // Resumen de saldos por cuenta / método de pago
   readonly accountsSummary = computed<AccountSummaryItem[]>(() => {
     const stats: Record<string, { income: number; expense: number; balance: number }> = {};
@@ -182,6 +210,8 @@ export class FinanceService {
     const categoryFilter = this.selectedCategoryFilter();
     const accountFilter = this.selectedAccountFilter();
     const search = this.searchTerm().trim().toLowerCase();
+    const startDate = this.selectedStartDate();
+    const endDate = this.selectedEndDate();
 
     return this.movements().filter((m) => {
       const matchesType = typeFilter === 'all' || m.type === typeFilter;
@@ -196,8 +226,11 @@ export class FinanceService {
         (CATEGORIES[m.category] && CATEGORIES[m.category].name.toLowerCase().includes(search)) ||
         (ACCOUNTS[m.account] && ACCOUNTS[m.account].name.toLowerCase().includes(search)) ||
         (m.toAccount && ACCOUNTS[m.toAccount] && ACCOUNTS[m.toAccount].name.toLowerCase().includes(search));
+      const matchesDate =
+        (!startDate || m.date >= startDate) &&
+        (!endDate || m.date <= endDate);
 
-      return matchesType && matchesCategory && matchesAccount && matchesSearch;
+      return matchesType && matchesCategory && matchesAccount && matchesSearch && matchesDate;
     });
   });
 
@@ -328,5 +361,15 @@ export class FinanceService {
 
   setSearchTerm(term: string): void {
     this.searchTerm.set(term);
+  }
+
+  setDateRangeFilter(start: string, end: string): void {
+    this.selectedStartDate.set(start);
+    this.selectedEndDate.set(end);
+  }
+
+  clearDateFilter(): void {
+    this.selectedStartDate.set('');
+    this.selectedEndDate.set('');
   }
 }

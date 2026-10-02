@@ -20,6 +20,15 @@ export class MovementListComponent {
   selectedCategory = 'all';
   selectedAccount = 'all';
 
+  // Date Filter State
+  startDate = '';
+  endDate = '';
+  datePreset: 'all' | 'today' | 'this_month' | 'custom' = 'all';
+
+  get todayExpense(): number {
+    return this.financeService.todayExpense();
+  }
+
   get filteredMovements(): Movement[] {
     return this.financeService.filteredMovements();
   }
@@ -88,5 +97,37 @@ export class MovementListComponent {
 
   getAccountInfo(accId: string): AccountInfo {
     return ACCOUNTS[accId] || ACCOUNTS['otra'];
+  }
+
+  applyDatePreset(preset: 'all' | 'today' | 'this_month'): void {
+    this.datePreset = preset;
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
+    if (preset === 'all') {
+      this.startDate = '';
+      this.endDate = '';
+      this.financeService.clearDateFilter();
+    } else if (preset === 'today') {
+      this.startDate = todayStr;
+      this.endDate = todayStr;
+      this.financeService.setDateRangeFilter(todayStr, todayStr);
+    } else if (preset === 'this_month') {
+      this.startDate = `${year}-${month}-01`;
+      this.endDate = todayStr;
+      this.financeService.setDateRangeFilter(this.startDate, this.endDate);
+    }
+  }
+
+  onCustomDateChange(): void {
+    this.datePreset = 'custom';
+    this.financeService.setDateRangeFilter(this.startDate, this.endDate);
+  }
+
+  clearDateFilter(): void {
+    this.applyDatePreset('all');
   }
 }

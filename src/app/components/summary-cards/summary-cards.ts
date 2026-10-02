@@ -23,6 +23,10 @@ export class SummaryCardsComponent {
     return this.financeService.totalExpense();
   }
 
+  get todayExpense(): number {
+    return this.financeService.todayExpense();
+  }
+
   get savingsRate(): number {
     return this.financeService.savingsRate();
   }
