@@ -22,4 +22,12 @@ export class NavbarComponent {
   openNewMovement(): void {
     this.financeService.openModal();
   }
+
+  openAccountsModal(): void {
+    this.financeService.openAccountsModal();
+  }
+
+  openCategoryModal(): void {
+    this.financeService.openCategoryModal();
+  }
 }

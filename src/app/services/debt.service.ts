@@ -26,6 +26,7 @@ export class DebtService {
   readonly errorMessage = signal<string | null>(null);
 
   // Modales
+  readonly isListModalOpen = signal<boolean>(false);
   readonly isModalOpen = signal<boolean>(false);
   readonly editingDebt = signal<Debt | null>(null);
   readonly isPayModalOpen = signal<boolean>(false);
@@ -141,6 +142,14 @@ export class DebtService {
   });
 
   // Métodos de Modal
+  openListModal(): void {
+    this.isListModalOpen.set(true);
+  }
+
+  closeListModal(): void {
+    this.isListModalOpen.set(false);
+  }
+
   openModal(): void {
     this.editingDebt.set(null);
     this.isModalOpen.set(true);

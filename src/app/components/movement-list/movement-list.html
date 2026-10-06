@@ -1,411 +1,315 @@
-<div class="rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
+<div class="h-full flex flex-col min-h-0 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
   
-  <!-- Header with Title & Filter Controls -->
-  <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+  <!-- Encabezado del Feed & Filtros Rápidos Personales -->
+  <div class="shrink-0 p-3 sm:px-5 sm:py-3 border-b border-slate-100 dark:border-slate-800 space-y-2.5">
     
-    <div>
-      <div class="flex items-center gap-2 flex-wrap">
-        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Historial de Movimientos</h3>
-        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-          {{ filteredMovements.length }} registros
-        </span>
-        <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 flex items-center gap-1.5 shadow-2xs">
-          <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-          <span>Gasto de hoy:</span>
-          <span>S/ {{ todayExpense | number:'1.2-2' }}</span>
-        </span>
+    <!-- Fila 1: Título de la Sección + Píldoras de Tipo -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div class="flex items-center gap-2">
+        <h2 class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>Actividad & Movimientos</span>
+          <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+            {{ filteredMovements.length }}
+          </span>
+        </h2>
       </div>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Conectado en tiempo real con Cloud Firestore</p>
+
+      <!-- Filtros por tipo (Píldoras táctiles) -->
+      <div class="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700 text-xs font-semibold self-start sm:self-auto">
+        <button
+          (click)="onTypeChange('all')"
+          [class]="currentTypeFilter === 'all' 
+            ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs' 
+            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+          class="px-2.5 py-1 rounded-lg transition-all cursor-pointer"
+        >
+          Todos
+        </button>
+
+        <button
+          (click)="onTypeChange('income')"
+          [class]="currentTypeFilter === 'income' 
+            ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-2xs' 
+            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+          class="px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span>Ingresos</span>
+        </button>
+
+        <button
+          (click)="onTypeChange('expense')"
+          [class]="currentTypeFilter === 'expense' 
+            ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 shadow-2xs' 
+            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+          class="px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+          <span>Egresos</span>
+        </button>
+
+        <button
+          (click)="onTypeChange('transfer')"
+          [class]="currentTypeFilter === 'transfer' 
+            ? 'bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-2xs' 
+            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+          class="px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+          <span>Transferencias</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Filter Tabs (All / Incomes / Expenses) -->
-    <div class="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700 text-xs font-medium self-start lg:self-auto">
-      <button
-        (click)="onTypeChange('all')"
-        [class]="currentTypeFilter === 'all' 
-          ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold' 
-          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
-        class="px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
-      >
-        <span>Todos</span>
-        <span class="px-1.5 py-0.2 rounded-full text-[10px]" [class]="currentTypeFilter === 'all' ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'">{{ totalCount }}</span>
-      </button>
+    <!-- Fila 2: Buscador Rápido y Presets de Fecha -->
+    <div class="flex flex-col sm:flex-row items-center gap-2">
+      
+      <!-- Buscador -->
+      <div class="relative w-full sm:flex-1">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (input)="onSearchChange()"
+          placeholder="Buscar por concepto o detalle..."
+          class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+        />
+      </div>
 
-      <button
-        (click)="onTypeChange('income')"
-        [class]="currentTypeFilter === 'income' 
-          ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm font-semibold' 
-          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
-        class="px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
-      >
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-        <span>Ingresos</span>
-        <span class="px-1.5 py-0.2 rounded-full text-[10px]" [class]="currentTypeFilter === 'income' ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'">{{ incomeCount }}</span>
-      </button>
+      <!-- Presets de Fecha (Todas / Hoy / Este Mes) -->
+      <div class="flex items-center gap-1.5 self-start sm:self-auto">
+        <button
+          (click)="applyDatePreset('all')"
+          type="button"
+          [class]="datePreset === 'all' 
+            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold' 
+            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'"
+          class="px-2.5 py-1 rounded-lg text-[11px] transition cursor-pointer"
+        >
+          Todas
+        </button>
 
-      <button
-        (click)="onTypeChange('expense')"
-        [class]="currentTypeFilter === 'expense' 
-          ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 shadow-sm font-semibold' 
-          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
-        class="px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
-      >
-        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-        <span>Egresos</span>
-        <span class="px-1.5 py-0.2 rounded-full text-[10px]" [class]="currentTypeFilter === 'expense' ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'">{{ expenseCount }}</span>
-      </button>
+        <button
+          (click)="applyDatePreset('today')"
+          type="button"
+          [class]="datePreset === 'today' 
+            ? 'bg-emerald-600 text-white font-bold' 
+            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'"
+          class="px-2.5 py-1 rounded-lg text-[11px] transition cursor-pointer flex items-center gap-1"
+        >
+          <span>Hoy</span>
+          @if (datePreset === 'today') {
+            <span class="w-1 h-1 rounded-full bg-white"></span>
+          }
+        </button>
 
-      <button
-        (click)="onTypeChange('transfer')"
-        [class]="currentTypeFilter === 'transfer' 
-          ? 'bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-sm font-semibold' 
-          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
-        class="px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
-      >
-        <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
-        <span>Transferencias</span>
-        <span class="px-1.5 py-0.2 rounded-full text-[10px]" [class]="currentTypeFilter === 'transfer' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'">{{ transferCount }}</span>
-      </button>
+        <button
+          (click)="applyDatePreset('this_month')"
+          type="button"
+          [class]="datePreset === 'this_month' 
+            ? 'bg-emerald-600 text-white font-bold' 
+            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'"
+          class="px-2.5 py-1 rounded-lg text-[11px] transition cursor-pointer"
+        >
+          Este Mes
+        </button>
+
+        <!-- Limpiar Filtros -->
+        @if (hasActiveFilters) {
+          <button
+            (click)="clearFilters()"
+            type="button"
+            class="text-[11px] text-rose-500 hover:text-rose-600 dark:text-rose-400 font-medium px-2 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
+            title="Limpiar todos los filtros"
+          >
+            ✕ Limpiar
+          </button>
+        }
+      </div>
+
     </div>
 
   </div>
 
-  <!-- Error / Security Rules Alert Banner -->
+  <!-- Alerta de Reglas de Seguridad si hay error -->
   @if (errorMessage) {
-    <div class="p-4 mx-6 mt-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-3">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-      </svg>
-      <div>
-        <p class="font-bold">Acceso a Cloud Firestore denegado (Reglas de Seguridad):</p>
-        <p class="mt-1 leading-relaxed">{{ errorMessage }}</p>
-        <p class="mt-2 text-[11px] text-amber-800 dark:text-amber-300 font-medium">
-          👉 Entra a tu <a href="https://console.firebase.google.com/" target="_blank" class="underline font-bold">Firebase Console</a> &gt; <strong>Firestore Database</strong> &gt; pestaña <strong>Rules</strong>, cambia <code class="bg-amber-100 dark:bg-amber-900/60 px-1 py-0.5 rounded">allow read, write: if false;</code> por <code class="bg-amber-100 dark:bg-amber-900/60 px-1 py-0.5 rounded">allow read, write: if true;</code> y haz clic en <strong>Publicar</strong>.
-        </p>
-      </div>
+    <div class="shrink-0 p-3 mx-4 mt-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs">
+      <p class="font-bold">Reglas de Cloud Firestore:</p>
+      <p class="mt-0.5">{{ errorMessage }}</p>
     </div>
   }
 
-  <!-- Search & Secondary Filters Toolbar (Search, Category & Account) -->
-  <div class="px-6 py-3 bg-slate-50/70 dark:bg-slate-950/40 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-3">
+  <!-- Feed Cronológico Personal (Timeline View) -->
+  <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-3 sm:p-5 space-y-4">
     
-    <!-- Search Bar -->
-    <div class="relative w-full sm:flex-1">
-      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    @if (isLoading) {
+      <div class="py-12 flex flex-col items-center justify-center gap-2.5 text-slate-400">
+        <svg class="animate-spin h-6 w-6 text-emerald-600 dark:text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
         </svg>
+        <span class="text-xs font-semibold">Cargando tus movimientos...</span>
       </div>
-      <input
-        type="text"
-        [(ngModel)]="searchQuery"
-        (input)="onSearchChange()"
-        placeholder="Buscar por concepto, categoría o cuenta..."
-        class="w-full pl-9 pr-4 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
-      />
-    </div>
+    } @else {
+      @for (group of groupedMovements; track group.rawDate) {
+        
+        <!-- Grupo por Día (Timeline Section) -->
+        <div class="space-y-2">
+          
+          <!-- Encabezado Sticky del Día -->
+          <div class="sticky top-0 z-10 py-1 px-1 flex items-center justify-between bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border-b border-slate-100 dark:border-slate-800/80">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs">📅</span>
+              <span class="text-xs font-bold text-slate-800 dark:text-slate-200 tracking-tight">
+                {{ group.dateLabel }}
+              </span>
+              @if (group.dateLabel === 'Hoy') {
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              }
+            </div>
 
-    <!-- Category Dropdown Filter -->
-    <div class="w-full sm:w-48">
-      <select
-        [(ngModel)]="selectedCategory"
-        (change)="onCategoryChange()"
-        class="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 dark:text-slate-200 cursor-pointer"
-      >
-        <option value="all">Todas las categorías</option>
-        @for (cat of categories; track cat.id) {
-          <option [value]="cat.id">{{ cat.name }}</option>
-        }
-      </select>
-    </div>
+            <!-- Resumen de Gasto del Día -->
+            @if (group.totalDayExpense > 0) {
+              <span class="text-[11px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-full">
+                - S/ {{ group.totalDayExpense | number:'1.2-2' }}
+              </span>
+            }
+          </div>
 
-    <!-- Account Dropdown Filter -->
-    <div class="w-full sm:w-48">
-      <select
-        [(ngModel)]="selectedAccount"
-        (change)="onAccountChange()"
-        class="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 dark:text-slate-200 cursor-pointer font-medium"
-      >
-        <option value="all">Todas las cuentas</option>
-        @for (acc of accounts; track acc.id) {
-          <option [value]="acc.id">{{ acc.name }}</option>
-        }
-      </select>
-    </div>
-
-  </div>
-
-  <!-- Toolbar row 2: Date Filters & Presets -->
-  <div class="px-6 py-2.5 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-    
-    <!-- Quick Date Presets -->
-    <div class="flex items-center gap-1.5 flex-wrap">
-      <span class="text-slate-400 dark:text-slate-500 font-semibold text-[11px] flex items-center gap-1 mr-1">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <span>Fecha:</span>
-      </span>
-
-      <button
-        (click)="applyDatePreset('all')"
-        type="button"
-        [class]="datePreset === 'all' 
-          ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs' 
-          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'"
-        class="px-2.5 py-1 rounded-lg text-[11px] transition cursor-pointer"
-      >
-        Todas
-      </button>
-
-      <button
-        (click)="applyDatePreset('today')"
-        type="button"
-        [class]="datePreset === 'today' 
-          ? 'bg-emerald-600 text-white font-bold shadow-xs' 
-          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'"
-        class="px-2.5 py-1 rounded-lg text-[11px] transition cursor-pointer flex items-center gap-1"
-      >
-        <span>Hoy</span>
-        @if (datePreset === 'today') {
-          <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-        }
-      </button>
-
-      <button
-        (click)="applyDatePreset('this_month')"
-        type="button"
-        [class]="datePreset === 'this_month' 
-          ? 'bg-emerald-600 text-white font-bold shadow-xs' 
-          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'"
-        class="px-2.5 py-1 rounded-lg text-[11px] transition cursor-pointer"
-      >
-        Este Mes
-      </button>
-    </div>
-
-    <!-- Custom Date Pickers (Desde - Hasta) -->
-    <div class="flex items-center gap-2 flex-wrap">
-      <div class="flex items-center gap-1.5">
-        <label class="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Desde:</label>
-        <input
-          type="date"
-          [(ngModel)]="startDate"
-          (change)="onCustomDateChange()"
-          class="px-2.5 py-1 text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
-        />
-      </div>
-
-      <div class="flex items-center gap-1.5">
-        <label class="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Hasta:</label>
-        <input
-          type="date"
-          [(ngModel)]="endDate"
-          (change)="onCustomDateChange()"
-          class="px-2.5 py-1 text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
-        />
-      </div>
-
-      @if (startDate || endDate) {
-        <button
-          (click)="clearDateFilter()"
-          type="button"
-          title="Limpiar filtro de fecha"
-          class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition cursor-pointer"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      }
-    </div>
-
-  </div>
-
-  <!-- Table List of Movements -->
-  <div class="overflow-x-auto">
-    <table class="w-full text-left border-collapse">
-      <thead>
-        <tr class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800">
-          <th class="py-3 px-6">Concepto</th>
-          <th class="py-3 px-4">Cuenta / Origen</th>
-          <th class="py-3 px-4">Categoría</th>
-          <th class="py-3 px-4">Fecha</th>
-          <th class="py-3 px-4 text-right">Monto</th>
-          <th class="py-3 px-6 text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-        @if (isLoading) {
-          <tr>
-            <td colspan="6" class="py-12 text-center">
-              <div class="flex flex-col items-center justify-center gap-2.5 text-slate-500 dark:text-slate-400">
-                <svg class="animate-spin h-6 w-6 text-emerald-600 dark:text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                </svg>
-                <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">Conectando con Cloud Firestore...</span>
-              </div>
-            </td>
-          </tr>
-        } @else {
-          @for (item of filteredMovements; track item.id) {
-            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors group">
-              
-              <!-- Title -->
-              <td class="py-4 px-6">
-                <div class="flex items-center gap-3">
+          <!-- Tarjetas de Movimientos del Día -->
+          <div class="space-y-1.5">
+            @for (item of group.items; track item.id) {
+              <div class="group flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-slate-50/60 hover:bg-slate-100/90 dark:bg-slate-800/40 dark:hover:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:shadow-2xs">
+                
+                <!-- Lado Izquierdo: Icono + Concepto + Cuenta -->
+                <div class="flex items-center gap-3 min-w-0">
+                  
+                  <!-- Avatar Circular de Categoría / Transferencia -->
                   <div 
-                    class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                    [class]="item.type === 'income' ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400' : (item.type === 'transfer' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400' : 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400')"
+                    class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center text-base sm:text-lg shrink-0 shadow-2xs"
+                    [class]="item.type === 'transfer' 
+                      ? 'bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-300' 
+                      : (item.type === 'income' ? 'bg-emerald-100 dark:bg-emerald-950/60' : 'bg-slate-100 dark:bg-slate-800')"
                   >
-                    @if (item.type === 'income') {
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 11l5-5m0 0l5 5m-5-5v12" />
-                      </svg>
-                    } @else if (item.type === 'transfer') {
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                      </svg>
+                    @if (item.type === 'transfer') {
+                      <span>⇄</span>
                     } @else {
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 13l-5 5m0 0l-5-5m5 5V6" />
-                      </svg>
+                      <span>{{ getCategoryEmoji(item.category) }}</span>
                     }
                   </div>
-                  <div>
-                    <p class="font-semibold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{{ item.title }}</p>
-                  </div>
-                </div>
-              </td>
 
-              <!-- Account Badge (Efectivo / Cuenta / Transferencia entre cuentas) -->
-              <td class="py-4 px-4 whitespace-nowrap">
-                @if (item.type === 'transfer') {
-                  <div class="inline-flex items-center gap-1.5 text-xs font-semibold">
-                    <span 
-                      class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] border"
-                      [class]="getAccountInfo(item.account).badgeBg"
-                    >
-                      @if (item.account === 'efectivo') {
-                        <span>💵</span>
-                      } @else if (item.account === 'tarjeta_tren') {
-                        <span>🚆</span>
+                  <!-- Título & Subtítulos -->
+                  <div class="min-w-0">
+                    <p class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                      {{ item.title }}
+                    </p>
+                    
+                    <div class="flex items-center gap-1.5 mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 flex-wrap">
+                      
+                      <!-- Detalle de Cuenta -->
+                      @if (item.type === 'transfer') {
+                        <span class="inline-flex items-center gap-1 font-medium text-sky-700 dark:text-sky-300">
+                          <span>{{ getAccountInfo(item.account).name }}</span>
+                          <span>➔</span>
+                          <span>{{ getAccountInfo(item.toAccount || 'efectivo').name }}</span>
+                        </span>
+                      } @else {
+                        <span class="inline-flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300">
+                          @if (getAccountInfo(item.account).type === 'efectivo') {
+                            <span>💵</span>
+                          } @else if (item.account === 'tarjeta_tren') {
+                            <span>🚆</span>
+                          } @else if (getAccountInfo(item.account).type === 'billetera') {
+                            <span>📱</span>
+                          } @else {
+                            <span>🏦</span>
+                          }
+                          <span>{{ getAccountInfo(item.account).name }}</span>
+                        </span>
                       }
-                      <span>{{ getAccountInfo(item.account).name }}</span>
-                    </span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
+
+                      <span>•</span>
+
+                      <!-- Detalle de Categoría -->
+                      <span class="font-normal text-slate-400 dark:text-slate-500">
+                        {{ getCategoryInfo(item.category).name }}
+                      </span>
+
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Lado Derecho: Monto + Acciones -->
+                <div class="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
+                  
+                  <!-- Monto -->
+                  <div class="text-right">
                     <span 
-                      class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] border"
-                      [class]="getAccountInfo(item.toAccount || 'efectivo').badgeBg"
+                      class="font-extrabold text-xs sm:text-sm tracking-tight block"
+                      [class]="item.type === 'income' 
+                        ? 'text-emerald-600 dark:text-emerald-400' 
+                        : (item.type === 'transfer' ? 'text-sky-600 dark:text-sky-400' : 'text-rose-600 dark:text-rose-400')"
                     >
-                      @if ((item.toAccount || 'efectivo') === 'efectivo') {
-                        <span>💵</span>
-                      } @else if ((item.toAccount || 'efectivo') === 'tarjeta_tren') {
-                        <span>🚆</span>
-                      }
-                      <span>{{ getAccountInfo(item.toAccount || 'efectivo').name }}</span>
+                      {{ item.type === 'income' ? '+' : (item.type === 'transfer' ? '⇄' : '-') }} S/ {{ item.amount | number:'1.2-2' }}
                     </span>
                   </div>
-                } @else {
-                  <span 
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border"
-                    [class]="getAccountInfo(item.account).badgeBg"
-                  >
-                    @if (getAccountInfo(item.account).type === 'efectivo') {
-                      <span>💵</span>
-                    } @else if (getAccountInfo(item.account).type === 'tarjeta' || item.account === 'tarjeta_tren') {
-                      <span>🚆</span>
-                    } @else if (getAccountInfo(item.account).type === 'billetera') {
-                      <span>📱</span>
-                    } @else {
-                      <span>🏦</span>
-                    }
-                    <span>{{ getAccountInfo(item.account).name }}</span>
-                  </span>
-                }
-              </td>
 
-              <!-- Category Badge -->
-              <td class="py-4 px-4 whitespace-nowrap">
-                <span 
-                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border"
-                  [class]="getCategoryInfo(item.category).badgeBg"
-                >
-                  <span class="w-1.5 h-1.5 rounded-full" [style.backgroundColor]="getCategoryInfo(item.category).color"></span>
-                  <span>{{ getCategoryInfo(item.category).name }}</span>
-                </span>
-              </td>
+                  <!-- Botones de Acción (Editar & Eliminar) -->
+                  <div class="inline-flex items-center gap-0.5">
+                    <button
+                      (click)="onEdit(item)"
+                      type="button"
+                      title="Editar movimiento"
+                      class="p-1 sm:p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-lg transition cursor-pointer"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                    
+                    <button
+                      (click)="onDelete(item.id)"
+                      type="button"
+                      title="Eliminar movimiento"
+                      class="p-1 sm:p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition cursor-pointer"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
 
-              <!-- Date -->
-              <td class="py-4 px-4 whitespace-nowrap text-slate-500 dark:text-slate-400 font-medium">
-                {{ item.date | date:'dd MMM yyyy' }}
-              </td>
-
-              <!-- Amount -->
-              <td class="py-4 px-4 whitespace-nowrap text-right">
-                <span 
-                  class="font-bold text-sm tracking-tight"
-                  [class]="item.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : (item.type === 'transfer' ? 'text-sky-600 dark:text-sky-400' : 'text-rose-600 dark:text-rose-400')"
-                >
-                  {{ item.type === 'income' ? '+' : (item.type === 'transfer' ? '⇄' : '-') }} S/ {{ item.amount | number:'1.2-2' }}
-                </span>
-              </td>
-
-              <!-- Actions -->
-              <td class="py-4 px-6 text-center whitespace-nowrap">
-                <div class="inline-flex items-center gap-1">
-                  <button
-                    (click)="onEdit(item)"
-                    type="button"
-                    title="Editar movimiento"
-                    class="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  </button>
-                  <button
-                    (click)="onDelete(item.id)"
-                    type="button"
-                    title="Eliminar de Firestore"
-                    class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
                 </div>
-              </td>
 
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="6" class="py-12 text-center">
-                <div class="max-w-xs mx-auto text-slate-400 dark:text-slate-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <p class="font-medium text-slate-700 dark:text-slate-300 text-sm">No hay movimientos registrados</p>
-                  <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Registra tu primer ingreso o egreso indicando la cuenta o efectivo.</p>
-                  <button
-                    (click)="openNewModal()"
-                    class="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition cursor-pointer"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span>Registrar primer movimiento</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          }
-        }
-      </tbody>
-    </table>
+              </div>
+            }
+          </div>
+
+        </div>
+
+      } @empty {
+        <!-- Estado Vacío -->
+        <div class="py-12 text-center text-slate-400">
+          <div class="max-w-xs mx-auto">
+            <span class="text-3xl block mb-2">💸</span>
+            <p class="font-bold text-slate-700 dark:text-slate-300 text-sm">No hay movimientos en este periodo</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Registra tu primer gasto o ingreso usando los botones de tu billetera.</p>
+            <button
+              (click)="openNewModal()"
+              class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition cursor-pointer shadow-2xs"
+            >
+              <span>+ Registrar movimiento</span>
+            </button>
+          </div>
+        </div>
+      }
+    }
+
   </div>
 
 </div>

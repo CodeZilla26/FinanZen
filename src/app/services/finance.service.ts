@@ -59,6 +59,8 @@ export class FinanceService {
   readonly isModalOpen = signal<boolean>(false);
   readonly editingMovement = signal<Movement | null>(null);
   readonly modalPreset = signal<ModalPreset | null>(null);
+  readonly isAccountsModalOpen = signal<boolean>(false);
+  readonly isCategoryModalOpen = signal<boolean>(false);
 
   constructor() {
     this.listenToMovements();
@@ -214,6 +216,17 @@ export class FinanceService {
     });
   });
 
+  readonly cashBalance = computed(() => {
+    const cash = this.accountsSummary().find((a) => a.id === 'efectivo');
+    return cash ? cash.balance : 0;
+  });
+
+  readonly bankBalance = computed(() => {
+    return this.accountsSummary()
+      .filter((a) => a.id !== 'efectivo')
+      .reduce((sum, a) => sum + a.balance, 0);
+  });
+
   // Filtered Movements for Table / List
   readonly filteredMovements = computed(() => {
     const typeFilter = this.selectedTypeFilter();
@@ -272,9 +285,29 @@ export class FinanceService {
 
   // Actions
   openModal(preset?: ModalPreset): void {
+    this.isAccountsModalOpen.set(false);
+    this.isCategoryModalOpen.set(false);
     this.editingMovement.set(null);
     this.modalPreset.set(preset || null);
     this.isModalOpen.set(true);
+  }
+
+  openAccountsModal(): void {
+    this.isCategoryModalOpen.set(false);
+    this.isAccountsModalOpen.set(true);
+  }
+
+  closeAccountsModal(): void {
+    this.isAccountsModalOpen.set(false);
+  }
+
+  openCategoryModal(): void {
+    this.isAccountsModalOpen.set(false);
+    this.isCategoryModalOpen.set(true);
+  }
+
+  closeCategoryModal(): void {
+    this.isCategoryModalOpen.set(false);
   }
 
   openTransferModal(account = 'bcp', toAccount = 'efectivo', title = 'Retiro de cajero a efectivo'): void {
@@ -298,6 +331,8 @@ export class FinanceService {
   }
 
   openEditModal(movement: Movement): void {
+    this.isAccountsModalOpen.set(false);
+    this.isCategoryModalOpen.set(false);
     this.modalPreset.set(null);
     this.editingMovement.set(movement);
     this.isModalOpen.set(true);

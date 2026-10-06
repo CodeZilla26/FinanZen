@@ -1,107 +1,29 @@
-<div class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors">
+<div class="h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors overflow-hidden">
   
   <!-- Global Top Navigation -->
-  <app-navbar></app-navbar>
+  <app-navbar class="shrink-0"></app-navbar>
 
-  <!-- Main Content Dashboard Area -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 pb-12">
+  <!-- Main Personal Wallet Viewport Area -->
+  <main class="flex-1 min-h-0 flex flex-col max-w-5xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 space-y-3 overflow-hidden">
     
-    <!-- Header Banner -->
-    <div class="pb-2">
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-        Panel de Control Financiero
-      </h1>
-      <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-        Resumen detallado de tus ingresos, gastos mensuales, transferencias y control de deudas.
-      </p>
-    </div>
-
-    <!-- Section 1: KPI Summary Cards -->
-    <section aria-label="Tarjetas de balance general">
+    <!-- Hero Section: Tarjeta Billetera Digital & Acciones Rápidas -->
+    <section aria-label="Billetera personal" class="shrink-0">
       <app-summary-cards></app-summary-cards>
     </section>
 
-    <!-- Section 2: Movements, Debts & Breakdown Grid -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-      
-      <!-- Main Column: Tabs for Movements vs Debts (2 cols on large screen) -->
-      <div class="lg:col-span-2 space-y-6">
-        
-        <!-- Tab Navigation Switcher -->
-        <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
-          
-          <button
-            (click)="setTab('movements')"
-            type="button"
-            class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer"
-            [class]="activeTab === 'movements'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            <span>Movimientos & Transacciones</span>
-            <span 
-              class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-              [class]="activeTab === 'movements' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'"
-            >
-              {{ totalMovementsCount }}
-            </span>
-          </button>
-
-          <button
-            (click)="setTab('debts')"
-            type="button"
-            class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer"
-            [class]="activeTab === 'debts'
-              ? 'bg-orange-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <span>Control de Deudas</span>
-            @if (pendingDebtsCount > 0) {
-              <span 
-                class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                [class]="activeTab === 'debts' ? 'bg-white/20 text-white' : 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'"
-              >
-                {{ pendingDebtsCount }} pendientes
-              </span>
-            }
-          </button>
-
-        </div>
-
-        <!-- Tab 1 View: Movements -->
-        @if (activeTab === 'movements') {
-          <app-movement-list></app-movement-list>
-        }
-
-        <!-- Tab 2 View: Debts -->
-        @if (activeTab === 'debts') {
-          <app-debt-list></app-debt-list>
-        }
-
-      </div>
-
-      <!-- Right Column: Accounts & Category Breakdown (1 col on large screen) -->
-      <div class="space-y-6">
-        <!-- Accounts and Cash Breakdown -->
-        <app-account-breakdown></app-account-breakdown>
-
-        <!-- Category Distribution Progress Bars -->
-        <app-category-breakdown></app-category-breakdown>
-      </div>
-
+    <!-- Timeline Section: Feed de Actividad Personal Agrupado por Fechas -->
+    <section aria-label="Actividad reciente" class="flex-1 min-h-0 flex flex-col overflow-hidden">
+      <app-movement-list class="block h-full min-h-0"></app-movement-list>
     </section>
 
   </main>
 
-  <!-- Modals -->
+  <!-- Ventanas Modales Especializadas (Se abren bajo demanda para mantener la pantalla limpia) -->
   <app-movement-modal></app-movement-modal>
+  <app-debt-list></app-debt-list>
   <app-debt-modal></app-debt-modal>
   <app-debt-pay-modal></app-debt-pay-modal>
+  <app-account-breakdown></app-account-breakdown>
+  <app-category-breakdown></app-category-breakdown>
 
 </div>

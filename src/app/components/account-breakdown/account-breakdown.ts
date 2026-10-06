@@ -11,6 +11,14 @@ import { FinanceService, AccountSummaryItem } from '../../services/finance.servi
 export class AccountBreakdownComponent {
   protected readonly financeService = inject(FinanceService);
 
+  get isOpen(): boolean {
+    return this.financeService.isAccountsModalOpen();
+  }
+
+  close(): void {
+    this.financeService.closeAccountsModal();
+  }
+
   get accounts(): AccountSummaryItem[] {
     return this.financeService.accountsSummary();
   }

@@ -11,6 +11,14 @@ import { FinanceService, CategoryBreakdownItem } from '../../services/finance.se
 export class CategoryBreakdownComponent {
   protected readonly financeService = inject(FinanceService);
 
+  get isOpen(): boolean {
+    return this.financeService.isCategoryModalOpen();
+  }
+
+  close(): void {
+    this.financeService.closeCategoryModal();
+  }
+
   get categoryExpenses(): CategoryBreakdownItem[] {
     return this.financeService.categoryExpenses();
   }

@@ -47,4 +47,12 @@ export class App {
   get totalMovementsCount(): number {
     return this.financeService.movements().length;
   }
+
+  openAccountsModal(): void {
+    this.financeService.openAccountsModal();
+  }
+
+  openCategoryModal(): void {
+    this.financeService.openCategoryModal();
+  }
 }
