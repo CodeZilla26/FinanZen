@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from './components/navbar/navbar';
-import { SummaryCardsComponent } from './components/summary-cards/summary-cards';
 import { CategoryBreakdownComponent } from './components/category-breakdown/category-breakdown';
 import { AccountBreakdownComponent } from './components/account-breakdown/account-breakdown';
 import { MovementListComponent } from './components/movement-list/movement-list';
@@ -9,6 +8,7 @@ import { MovementModalComponent } from './components/movement-modal/movement-mod
 import { DebtListComponent } from './components/debt-list/debt-list';
 import { DebtModalComponent } from './components/debt-modal/debt-modal';
 import { DebtPayModalComponent } from './components/debt-pay-modal/debt-pay-modal';
+import { SummaryModalComponent } from './components/summary-modal/summary-modal';
 import { DebtService } from './services/debt.service';
 import { FinanceService } from './services/finance.service';
 
@@ -18,14 +18,14 @@ import { FinanceService } from './services/finance.service';
   imports: [
     CommonModule,
     NavbarComponent,
-    SummaryCardsComponent,
     CategoryBreakdownComponent,
     AccountBreakdownComponent,
     MovementListComponent,
     MovementModalComponent,
     DebtListComponent,
     DebtModalComponent,
-    DebtPayModalComponent
+    DebtPayModalComponent,
+    SummaryModalComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
@@ -46,6 +46,23 @@ export class App {
 
   get totalMovementsCount(): number {
     return this.financeService.movements().length;
+  }
+
+  get totalBalance(): number {
+    return this.financeService.totalBalance();
+  }
+
+  get totalPendingPayable(): number {
+    return this.debtService.totalPendingPayable();
+  }
+
+  get totalPendingReceivable(): number {
+    return this.debtService.totalPendingReceivable();
+  }
+
+  openSummaryModal(): void {
+    const tab = this.activeTab === 'movements' ? 'financial' : 'debts';
+    this.financeService.openSummaryModal(tab);
   }
 
   openAccountsModal(): void {

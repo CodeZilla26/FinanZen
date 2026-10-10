@@ -8,25 +8,25 @@
     ></div>
 
     <!-- Modal Box -->
-    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+    <div class="flex min-h-full items-center justify-center p-3 sm:p-4 text-center">
       <div 
-        class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-slate-200 dark:border-slate-800"
+        class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-left shadow-2xl transition-all w-full max-w-md my-4 sm:my-8 border border-slate-200 dark:border-slate-800"
         (click)="$event.stopPropagation()"
       >
         
         <!-- Header -->
-        <div class="px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div class="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
             <div>
-              <h3 class="text-base font-bold text-slate-900 dark:text-white">
+              <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                 {{ debt.type === 'payable' ? 'Liquidar y Pagar Deuda' : 'Registrar Cobro de Deuda' }}
               </h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400">
+              <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
                 Se registrará automáticamente el movimiento en tu historial financiero
               </p>
             </div>
@@ -34,7 +34,7 @@
           <button 
             (click)="close()"
             type="button" 
-            class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+            class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shrink-0"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -43,7 +43,7 @@
         </div>
 
         <!-- Body / Summary Box -->
-        <div class="p-6 space-y-4 text-xs">
+        <div class="p-4 sm:p-6 space-y-4 text-xs">
           
           <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-2">
             <div class="flex items-center justify-between">
@@ -54,6 +54,14 @@
               <span class="text-slate-500 dark:text-slate-400">Concepto:</span>
               <span class="font-medium text-slate-800 dark:text-slate-200">{{ debt.title }}</span>
             </div>
+            @if (debt.originAccount && debt.originAccount !== 'none') {
+              <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-700/40">
+                <span>{{ debt.type === 'receivable' ? 'Desembolsado originalmente de:' : 'Recibido originalmente en:' }}</span>
+                <span class="font-semibold text-slate-700 dark:text-slate-200">
+                  {{ getAccountName(debt.originAccount) }}
+                </span>
+              </div>
+            }
             <div class="pt-2 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
               <span class="font-semibold text-slate-700 dark:text-slate-300">Monto a liquidar:</span>
               <span class="text-base font-extrabold text-emerald-600 dark:text-emerald-400">
@@ -65,7 +73,7 @@
           <!-- Account Selector -->
           <div>
             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              {{ debt.type === 'payable' ? '¿De qué cuenta saldrá el dinero para pagar?' : '¿En qué cuenta recibirás el dinero cobrado?' }}
+              {{ debt.type === 'payable' ? '¿De qué cuenta saldrá el dinero para pagar?' : '¿A qué cuenta ingresó la devolución del dinero?' }}
             </label>
             <select
               [(ngModel)]="selectedAccount"
@@ -75,8 +83,22 @@
                 <option [value]="acc.id">{{ acc.name }}</option>
               }
             </select>
-            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
-              {{ debt.type === 'payable' ? 'Se creará un Egreso en esta cuenta y se restará de su saldo.' : 'Se creará un Ingreso en esta cuenta y aumentará su saldo.' }}
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+              @if (debt.type === 'payable') {
+                <span>Se creará un Egreso en <strong>{{ getAccountName(selectedAccount) }}</strong> y se restará de su saldo.</span>
+              } @else {
+                @if (debt.originAccount && debt.originAccount !== 'none' && debt.originAccount === selectedAccount) {
+                  <span class="text-emerald-600 dark:text-emerald-400 font-medium">
+                    ✓ El dinero regresará a la misma cuenta de origen (<strong>{{ getAccountName(selectedAccount) }}</strong>) como un Ingreso.
+                  </span>
+                } @else if (debt.originAccount && debt.originAccount !== 'none') {
+                  <span class="text-sky-600 dark:text-sky-400 font-medium">
+                    ✓ El préstamo salió de <strong>{{ getAccountName(debt.originAccount) }}</strong>, pero la devolución entrará como Ingreso a <strong>{{ getAccountName(selectedAccount) }}</strong>.
+                  </span>
+                } @else {
+                  <span>Se registrará un Ingreso en <strong>{{ getAccountName(selectedAccount) }}</strong> aumentando su saldo.</span>
+                }
+              }
             </p>
           </div>
 

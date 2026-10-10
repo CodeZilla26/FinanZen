@@ -9,7 +9,8 @@ import { ACCOUNTS } from '../../models/movement.model';
   selector: 'app-debt-list',
   standalone: true,
   imports: [CommonModule, DecimalPipe, DatePipe, FormsModule],
-  templateUrl: './debt-list.html'
+  templateUrl: './debt-list.html',
+  host: { class: 'block w-full' }
 })
 export class DebtListComponent {
   protected readonly debtService = inject(DebtService);
@@ -17,14 +18,6 @@ export class DebtListComponent {
   searchQuery = '';
   selectedStatus: 'all' | 'pending' | 'paid' = 'all';
   selectedType: 'all' | 'payable' | 'receivable' = 'all';
-
-  get isOpen(): boolean {
-    return this.debtService.isListModalOpen();
-  }
-
-  closeModal(): void {
-    this.debtService.closeListModal();
-  }
 
   get filteredDebts(): Debt[] {
     return this.debtService.filteredDebts();
@@ -54,10 +47,6 @@ export class DebtListComponent {
     return this.debtService.errorMessage();
   }
 
-  onSearchChange(): void {
-    this.debtService.setSearchTerm(this.searchQuery);
-  }
-
   onStatusChange(status: 'all' | 'pending' | 'paid'): void {
     this.selectedStatus = status;
     this.debtService.setStatusFilter(status);
@@ -68,21 +57,36 @@ export class DebtListComponent {
     this.debtService.setTypeFilter(type);
   }
 
+  onSearchChange(): void {
+    this.debtService.setSearchTerm(this.searchQuery);
+  }
+
   openNewModal(): void {
     this.debtService.openModal();
   }
 
-  openEditModal(debt: Debt): void {
+  onEdit(debt: Debt): void {
     this.debtService.openEditModal(debt);
   }
 
-  openPayModal(debt: Debt): void {
+  onPay(debt: Debt): void {
     this.debtService.openPayModal(debt);
   }
 
   async onDelete(id: string): Promise<void> {
-    if (confirm('¿Estás seguro de que deseas eliminar este registro de deuda en Firebase?')) {
+    if (confirm('¿Estás seguro de que deseas eliminar este registro de deuda?')) {
       await this.debtService.deleteDebt(id);
     }
+  }
+
+  getAccountName(accId?: string): string {
+    if (!accId) return '';
+    return ACCOUNTS[accId]?.name || accId;
+  }
+
+  isOverdue(dueDate?: string): boolean {
+    if (!dueDate) return false;
+    const today = new Date().toISOString().substring(0, 10);
+    return dueDate < today;
   }
 }

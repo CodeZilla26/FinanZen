@@ -61,6 +61,8 @@ export class FinanceService {
   readonly modalPreset = signal<ModalPreset | null>(null);
   readonly isAccountsModalOpen = signal<boolean>(false);
   readonly isCategoryModalOpen = signal<boolean>(false);
+  readonly isSummaryModalOpen = signal<boolean>(false);
+  readonly summaryModalTab = signal<'financial' | 'debts'>('financial');
 
   constructor() {
     this.listenToMovements();
@@ -216,17 +218,6 @@ export class FinanceService {
     });
   });
 
-  readonly cashBalance = computed(() => {
-    const cash = this.accountsSummary().find((a) => a.id === 'efectivo');
-    return cash ? cash.balance : 0;
-  });
-
-  readonly bankBalance = computed(() => {
-    return this.accountsSummary()
-      .filter((a) => a.id !== 'efectivo')
-      .reduce((sum, a) => sum + a.balance, 0);
-  });
-
   // Filtered Movements for Table / List
   readonly filteredMovements = computed(() => {
     const typeFilter = this.selectedTypeFilter();
@@ -285,6 +276,7 @@ export class FinanceService {
 
   // Actions
   openModal(preset?: ModalPreset): void {
+    this.isSummaryModalOpen.set(false);
     this.isAccountsModalOpen.set(false);
     this.isCategoryModalOpen.set(false);
     this.editingMovement.set(null);
@@ -292,7 +284,23 @@ export class FinanceService {
     this.isModalOpen.set(true);
   }
 
+  openSummaryModal(tab: 'financial' | 'debts' = 'financial'): void {
+    this.isAccountsModalOpen.set(false);
+    this.isCategoryModalOpen.set(false);
+    this.summaryModalTab.set(tab);
+    this.isSummaryModalOpen.set(true);
+  }
+
+  setSummaryModalTab(tab: 'financial' | 'debts'): void {
+    this.summaryModalTab.set(tab);
+  }
+
+  closeSummaryModal(): void {
+    this.isSummaryModalOpen.set(false);
+  }
+
   openAccountsModal(): void {
+    this.isSummaryModalOpen.set(false);
     this.isCategoryModalOpen.set(false);
     this.isAccountsModalOpen.set(true);
   }
@@ -302,6 +310,7 @@ export class FinanceService {
   }
 
   openCategoryModal(): void {
+    this.isSummaryModalOpen.set(false);
     this.isAccountsModalOpen.set(false);
     this.isCategoryModalOpen.set(true);
   }
@@ -331,6 +340,7 @@ export class FinanceService {
   }
 
   openEditModal(movement: Movement): void {
+    this.isSummaryModalOpen.set(false);
     this.isAccountsModalOpen.set(false);
     this.isCategoryModalOpen.set(false);
     this.modalPreset.set(null);
@@ -344,10 +354,10 @@ export class FinanceService {
     this.modalPreset.set(null);
   }
 
-  async addMovement(newMovement: Omit<Movement, 'id'>): Promise<void> {
+  async addMovement(newMovement: Omit<Movement, 'id'>): Promise<string> {
     try {
       const movementsCol = collection(firestore, 'movements');
-      await addDoc(movementsCol, {
+      const docRef = await addDoc(movementsCol, {
         title: newMovement.title,
         amount: Number(newMovement.amount),
         type: newMovement.type,
@@ -358,6 +368,7 @@ export class FinanceService {
         createdAt: serverTimestamp()
       });
       this.closeModal();
+      return docRef.id;
     } catch (error: any) {
       console.error('Error al guardar movimiento en Firestore:', error);
       if (error.code === 'permission-denied') {

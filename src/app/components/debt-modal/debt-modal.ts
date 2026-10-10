@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DebtService } from '../../services/debt.service';
 import { DebtType } from '../../models/debt.model';
+import { ACCOUNTS } from '../../models/movement.model';
 
 @Component({
   selector: 'app-debt-modal',
@@ -13,6 +14,7 @@ import { DebtType } from '../../models/debt.model';
 export class DebtModalComponent {
   protected readonly debtService = inject(DebtService);
 
+  readonly accounts = Object.values(ACCOUNTS);
   readonly isSaving = signal<boolean>(false);
 
   // Form Fields
@@ -20,6 +22,7 @@ export class DebtModalComponent {
   person = '';
   amount: number | null = null;
   type: DebtType = 'payable';
+  originAccount = 'none';
   date = new Date().toISOString().substring(0, 10);
   dueDate = '';
   notes = '';
@@ -32,6 +35,7 @@ export class DebtModalComponent {
         this.person = itemToEdit.person;
         this.amount = itemToEdit.amount;
         this.type = itemToEdit.type;
+        this.originAccount = itemToEdit.originAccount || 'none';
         this.date = itemToEdit.date;
         this.dueDate = itemToEdit.dueDate || '';
         this.notes = itemToEdit.notes || '';
@@ -49,6 +53,9 @@ export class DebtModalComponent {
 
   setType(type: DebtType): void {
     this.type = type;
+    if (!this.isEditing) {
+      this.originAccount = type === 'receivable' ? 'efectivo' : 'none';
+    }
   }
 
   close(): void {
@@ -74,6 +81,7 @@ export class DebtModalComponent {
         status: itemToEdit ? itemToEdit.status : 'pending' as const,
         date: this.date || new Date().toISOString().substring(0, 10),
         dueDate: this.dueDate || '',
+        originAccount: this.originAccount,
         notes: this.notes.trim()
       };
 
@@ -95,6 +103,7 @@ export class DebtModalComponent {
     this.person = '';
     this.amount = null;
     this.type = 'payable';
+    this.originAccount = 'none';
     this.date = new Date().toISOString().substring(0, 10);
     this.dueDate = '';
     this.notes = '';

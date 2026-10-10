@@ -8,11 +8,19 @@
    ============================================================ */
 
 html, body {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
   scroll-behavior: smooth;
+}
+
+/* Ocultar barra de scroll para pestañas horizontales en móviles */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Configuración global para Firefox */

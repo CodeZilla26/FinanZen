@@ -26,7 +26,6 @@ export class DebtService {
   readonly errorMessage = signal<string | null>(null);
 
   // Modales
-  readonly isListModalOpen = signal<boolean>(false);
   readonly isModalOpen = signal<boolean>(false);
   readonly editingDebt = signal<Debt | null>(null);
   readonly isPayModalOpen = signal<boolean>(false);
@@ -66,8 +65,11 @@ export class DebtService {
               status: (data['status'] as DebtStatus) || 'pending',
               date: data['date'] || new Date().toISOString().substring(0, 10),
               dueDate: data['dueDate'] || '',
+              originAccount: data['originAccount'] || '',
+              originMovementId: data['originMovementId'] || '',
               paidDate: data['paidDate'] || '',
               paidFromAccount: data['paidFromAccount'] || '',
+              paymentMovementId: data['paymentMovementId'] || '',
               movementId: data['movementId'] || '',
               notes: data['notes'] || ''
             };
@@ -142,14 +144,6 @@ export class DebtService {
   });
 
   // Métodos de Modal
-  openListModal(): void {
-    this.isListModalOpen.set(true);
-  }
-
-  closeListModal(): void {
-    this.isListModalOpen.set(false);
-  }
-
   openModal(): void {
     this.editingDebt.set(null);
     this.isModalOpen.set(true);
@@ -178,6 +172,33 @@ export class DebtService {
   // Operaciones CRUD
   async addDebt(newDebt: Omit<Debt, 'id'>): Promise<void> {
     try {
+      let originMovementId = '';
+
+      // Si el usuario especificó una cuenta de origen real, registramos el impacto contable automático:
+      if (newDebt.originAccount && newDebt.originAccount !== 'none') {
+        if (newDebt.type === 'receivable') {
+          // Me deben (presté dinero): Egreso inmediato de la cuenta elegida
+          originMovementId = await this.financeService.addMovement({
+            title: `Préstamo otorgado a ${newDebt.person}: ${newDebt.title}`,
+            amount: Number(newDebt.amount),
+            type: 'expense',
+            category: 'deudas',
+            account: newDebt.originAccount,
+            date: newDebt.date
+          });
+        } else if (newDebt.type === 'payable') {
+          // Yo debo (recibí préstamo): Ingreso inmediato en la cuenta elegida
+          originMovementId = await this.financeService.addMovement({
+            title: `Préstamo recibido de ${newDebt.person}: ${newDebt.title}`,
+            amount: Number(newDebt.amount),
+            type: 'income',
+            category: 'otros',
+            account: newDebt.originAccount,
+            date: newDebt.date
+          });
+        }
+      }
+
       const debtsCol = collection(firestore, 'debts');
       await addDoc(debtsCol, {
         title: newDebt.title,
@@ -187,6 +208,11 @@ export class DebtService {
         status: newDebt.status || 'pending',
         date: newDebt.date,
         dueDate: newDebt.dueDate || '',
+        originAccount: newDebt.originAccount || 'none',
+        originMovementId: originMovementId || '',
+        paidDate: '',
+        paidFromAccount: '',
+        paymentMovementId: '',
         notes: newDebt.notes || '',
         createdAt: serverTimestamp()
       });
@@ -222,6 +248,26 @@ export class DebtService {
 
   async deleteDebt(id: string): Promise<void> {
     try {
+      const debt = this.debts().find((d) => d.id === id);
+      if (debt) {
+        // Si tenía movimiento de salida/entrada original, lo eliminamos de Firestore para no dejar saldos huérfanos
+        if (debt.originMovementId) {
+          try {
+            await this.financeService.deleteMovement(debt.originMovementId);
+          } catch (e) {
+            console.warn('No se pudo eliminar el movimiento de origen vinculado:', e);
+          }
+        }
+        // Si tenía movimiento de liquidación/pago, también lo eliminamos
+        if (debt.paymentMovementId) {
+          try {
+            await this.financeService.deleteMovement(debt.paymentMovementId);
+          } catch (e) {
+            console.warn('No se pudo eliminar el movimiento de pago vinculado:', e);
+          }
+        }
+      }
+
       const docRef = doc(firestore, 'debts', id);
       await deleteDoc(docRef);
     } catch (error: any) {
@@ -239,10 +285,12 @@ export class DebtService {
     if (!debt) return;
 
     try {
+      let moveId = '';
+
       // 1. Registra el movimiento contable automático en FinanceService
       if (debt.type === 'payable') {
         // Yo debía dinero: al pagar, es un Egreso de la cuenta elegida
-        await this.financeService.addMovement({
+        moveId = await this.financeService.addMovement({
           title: `Pago de deuda a ${debt.person}: ${debt.title}`,
           amount: debt.amount,
           type: 'expense',
@@ -251,23 +299,24 @@ export class DebtService {
           date: paymentDate
         });
       } else {
-        // Me debían dinero: al cobrar, es un Ingreso a la cuenta elegida
-        await this.financeService.addMovement({
-          title: `Cobro de deuda de ${debt.person}: ${debt.title}`,
+        // Me debían dinero: al cobrar, es un Ingreso a la cuenta elegida donde se devolvió el dinero
+        moveId = await this.financeService.addMovement({
+          title: `Devolución de préstamo de ${debt.person}: ${debt.title}`,
           amount: debt.amount,
           type: 'income',
-          category: 'otros',
+          category: 'deudas',
           account: accountId,
           date: paymentDate
         });
       }
 
-      // 2. Marca la deuda como pagada en Firestore
+      // 2. Marca la deuda como pagada en Firestore guardando la cuenta y el ID del movimiento
       const docRef = doc(firestore, 'debts', debtId);
       await updateDoc(docRef, {
         status: 'paid',
         paidDate: paymentDate,
         paidFromAccount: accountId,
+        paymentMovementId: moveId || '',
         updatedAt: serverTimestamp()
       });
 

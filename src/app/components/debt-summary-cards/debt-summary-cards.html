@@ -1,0 +1,91 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+  
+  <!-- Card 1: Total por Pagar (Yo debo - Pasivo) -->
+  <div class="rounded-2xl bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 hover:shadow-md transition-all flex flex-col justify-between">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Total por Pagar (Yo debo)</span>
+      <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center border border-rose-100 dark:border-rose-800 text-sm font-bold">
+        📉
+      </div>
+    </div>
+    <div class="mt-2">
+      <div class="text-xl sm:text-2xl font-extrabold tracking-tight text-rose-600 dark:text-rose-400">
+        S/ {{ totalPendingPayable | number:'1.2-2' }}
+      </div>
+      <div class="mt-2 flex items-center justify-between gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+        <span class="inline-flex items-center gap-1 font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.2 rounded-full border border-rose-200 dark:border-rose-800 text-[10px]">
+          {{ pendingPayableCount }} pendientes
+        </span>
+        <span class="text-[10px]">Pasivo pendiente</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2: Total por Cobrar (Me deben - Activo) -->
+  <div class="rounded-2xl bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 hover:shadow-md transition-all flex flex-col justify-between">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Total por Cobrar (Me deben)</span>
+      <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-800 text-sm font-bold">
+        📈
+      </div>
+    </div>
+    <div class="mt-2">
+      <div class="text-xl sm:text-2xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
+        S/ {{ totalPendingReceivable | number:'1.2-2' }}
+      </div>
+      <div class="mt-2 flex items-center justify-between gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+        <span class="inline-flex items-center gap-1 font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.2 rounded-full border border-emerald-200 dark:border-emerald-800 text-[10px]">
+          {{ pendingReceivableCount }} por recuperar
+        </span>
+        <span class="text-[10px]">Dinero prestado</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3: Posición Neta de Deudas -->
+  <div class="rounded-2xl bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 hover:shadow-md transition-all flex flex-col justify-between">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Balance Neto Deudas</span>
+      <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-700 text-sm font-bold">
+        ⚖️
+      </div>
+    </div>
+    <div class="mt-2">
+      <div 
+        class="text-xl sm:text-2xl font-extrabold tracking-tight"
+        [class]="netDebtBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'"
+      >
+        {{ netDebtBalance >= 0 ? '+' : '' }} S/ {{ netDebtBalance | number:'1.2-2' }}
+      </div>
+      <div class="mt-2 flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+        <span 
+          class="font-medium px-1.5 py-0.2 rounded border text-[10px]"
+          [class]="netDebtBalance >= 0 ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800' : 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-800'"
+        >
+          {{ netDebtBalance >= 0 ? 'A favor' : 'En contra' }}
+        </span>
+        <span class="text-[10px]">Cobros menos deudas</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4: Total Liquidado -->
+  <div class="rounded-2xl bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 hover:shadow-md transition-all flex flex-col justify-between">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Deudas Liquidadas</span>
+      <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-700 text-sm font-bold">
+        ✓
+      </div>
+    </div>
+    <div class="mt-2">
+      <div class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+        S/ {{ totalPaid | number:'1.2-2' }}
+      </div>
+      <div class="mt-2 flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+        <span class="font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.2 rounded text-[10px]">Histórico</span>
+        <span class="text-[10px]">Total saldado</span>
+      </div>
+    </div>
+  </div>
+
+</div>

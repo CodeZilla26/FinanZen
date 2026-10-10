@@ -1,147 +1,119 @@
-<!-- Tarjeta Billetera Digital Personal (Personal Wallet Hero) -->
-<div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 text-white p-4 sm:p-5 shadow-lg shadow-slate-900/10 border border-slate-700/60 dark:border-slate-800/80">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
   
-  <!-- Glow decorativos sutiles -->
-  <div class="absolute -right-12 -top-12 w-48 h-48 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none"></div>
-  <div class="absolute -left-12 -bottom-12 w-48 h-48 bg-sky-500/10 rounded-full blur-2xl pointer-events-none"></div>
-
-  <!-- Fila 1: Encabezado de la Tarjeta y Acceso a Mis Cuentas -->
-  <div class="relative z-10 flex items-center justify-between gap-2">
-    <div class="flex items-center gap-2">
-      <span class="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-0.5 rounded-full">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span>Dinero Total Disponible</span>
-      </span>
-    </div>
-
-    <!-- Acceso rápido a Cuentas & Efectivo -->
-    <button
-      (click)="openAccountsModal()"
-      type="button"
-      class="text-[11px] font-semibold text-slate-300 hover:text-white bg-white/10 hover:bg-white/15 px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1 shadow-2xs border border-white/5"
-      title="Ver desglose detallado de efectivo y cuentas"
-    >
-      <span>💳 Mis Cuentas</span>
-      <span class="text-xs">➔</span>
-    </button>
-  </div>
-
-  <!-- Fila 2: Saldo Principal Gigante y Sub-Balances Personales -->
-  <div class="relative z-10 mt-2 sm:mt-2.5 flex flex-col md:flex-row md:items-end justify-between gap-3">
-    <div>
-      <div class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white flex items-baseline gap-2">
-        <span>S/ {{ totalBalance | number:'1.2-2' }}</span>
-      </div>
-      <p class="text-[11px] text-slate-400 mt-0.5">Saldo neto consolidado de todas tus fuentes</p>
-    </div>
-
-    <!-- Píldoras de Micro-Balances (Efectivo / Bancos / Gasto de Hoy) -->
-    <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-      <!-- Efectivo -->
-      <button
-        (click)="openAccountsModal()"
-        type="button"
-        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs transition cursor-pointer"
-        title="Ver efectivo disponible"
-      >
-        <span class="text-xs">💵</span>
-        <span class="text-slate-300 font-medium">Efectivo:</span>
-        <span class="font-bold text-emerald-300">S/ {{ cashBalance | number:'1.2-2' }}</span>
-      </button>
-
-      <!-- Bancos -->
-      <button
-        (click)="openAccountsModal()"
-        type="button"
-        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs transition cursor-pointer"
-        title="Ver cuentas bancarias"
-      >
-        <span class="text-xs">🏦</span>
-        <span class="text-slate-300 font-medium">Cuentas:</span>
-        <span class="font-bold text-sky-300">S/ {{ bankBalance | number:'1.2-2' }}</span>
-      </button>
-
-      <!-- Gasto Hoy -->
-      <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-rose-950/40 border border-rose-800/40 text-xs">
-        <span class="text-xs">🔥</span>
-        <span class="text-rose-200/80 font-medium">Hoy:</span>
-        <span class="font-bold text-rose-300">S/ {{ todayExpense | number:'1.2-2' }}</span>
+  <!-- Card 1: Balance Total -->
+  <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-900 dark:to-slate-950 p-5 sm:p-6 text-white shadow-lg shadow-slate-900/10 border border-slate-700/50 dark:border-slate-800 flex flex-col justify-between">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Balance Total</span>
+      <div class="w-8 h-8 rounded-lg bg-white/10 backdrop-blur-md flex items-center justify-center text-emerald-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
       </div>
     </div>
-  </div>
-
-  <!-- Fila 3: Barra de Acciones Rápidas (Billetera Táctil) -->
-  <div class="relative z-10 mt-3 sm:mt-3.5 pt-3 border-t border-white/10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-    
-    <!-- 1. Registrar Ingreso -->
-    <button
-      (click)="openIncomeModal()"
-      type="button"
-      class="px-3 py-1.5 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-    >
-      <span class="text-sm">＋</span>
-      <span>Ingreso</span>
-    </button>
-
-    <!-- 2. Registrar Gasto -->
-    <button
-      (click)="openExpenseModal()"
-      type="button"
-      class="px-3 py-1.5 rounded-xl bg-rose-600/90 hover:bg-rose-500 text-white text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-    >
-      <span class="text-sm">－</span>
-      <span>Gasto</span>
-    </button>
-
-    <!-- 3. Transferir / Tren -->
-    <button
-      (click)="openTransferModal()"
-      type="button"
-      class="px-3 py-1.5 rounded-xl bg-sky-600/90 hover:bg-sky-500 text-white text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-      title="Transferir entre cuentas o recargar tarjeta del tren"
-    >
-      <span class="text-xs">⇄</span>
-      <span>Transferir</span>
-    </button>
-
-    <!-- 4. Mis Cuentas -->
-    <button
-      (click)="openAccountsModal()"
-      type="button"
-      class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-      title="Ver desglose de cuentas y efectivo"
-    >
-      <span class="text-xs">💳</span>
-      <span>Cuentas</span>
-    </button>
-
-    <!-- 5. Control de Deudas -->
-    <button
-      (click)="openDebtsModal()"
-      type="button"
-      class="px-3 py-1.5 rounded-xl bg-orange-600/90 hover:bg-orange-500 text-white text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-      title="Abrir ventana de control de deudas y compromisos"
-    >
-      <span class="text-xs">👥</span>
-      <span>Deudas</span>
-      @if (pendingDebtsCount > 0) {
-        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-white text-orange-700">
-          {{ pendingDebtsCount }}
+    <div class="mt-2">
+      <div class="text-xl sm:text-2xl font-extrabold tracking-tight">
+        S/ {{ totalBalance | number:'1.2-2' }}
+      </div>
+      <div class="mt-2 flex items-center justify-between gap-1 text-[11px] text-slate-300">
+        <span class="inline-flex items-center text-emerald-400 font-medium">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+          Saldo Neto
         </span>
-      }
-    </button>
+        <button
+          (click)="openAccountsModal()"
+          type="button"
+          class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-300 hover:text-white bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded-lg transition cursor-pointer shadow-2xs"
+          title="Ver desglose de mis cuentas y efectivo"
+        >
+          <span>Ver cuentas</span>
+          <span>➔</span>
+        </button>
+      </div>
+    </div>
+    <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
+  </div>
 
-    <!-- 6. Análisis de Gastos -->
-    <button
-      (click)="openCategoryModal()"
-      type="button"
-      class="px-3 py-1.5 rounded-xl bg-purple-600/90 hover:bg-purple-500 text-white text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-      title="Abrir ventana de distribución de gastos por categoría"
-    >
-      <span class="text-xs">📊</span>
-      <span>Gastos</span>
-    </button>
+  <!-- Card 2: Ingresos Totales -->
+  <div class="rounded-2xl bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 hover:shadow-md transition-all flex flex-col justify-between">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Ingresos</span>
+      <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-800">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7 11l5-5m0 0l5 5m-5-5v12" />
+        </svg>
+      </div>
+    </div>
+    <div class="mt-2">
+      <div class="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+        + S/ {{ totalIncome | number:'1.2-2' }}
+      </div>
+      <div class="mt-2 flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+        <span class="font-medium text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-100 dark:border-emerald-800">+ Entradas</span>
+        <span>en este periodo</span>
+      </div>
+    </div>
+  </div>
 
+  <!-- Card 3: Egresos Totales -->
+  <div class="rounded-2xl bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 hover:shadow-md transition-all flex flex-col justify-between">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Gastos</span>
+      <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center border border-rose-100 dark:border-rose-800">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+        </svg>
+      </div>
+    </div>
+    <div class="mt-2">
+      <div class="text-xl sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400">
+        - S/ {{ totalExpense | number:'1.2-2' }}
+      </div>
+      <div class="mt-2 flex items-center justify-between gap-1 text-[11px]">
+        <span class="inline-flex items-center gap-1 font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.2 rounded-full border border-rose-200 dark:border-rose-800 text-[10px]">
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+          <span>Hoy: S/ {{ todayExpense | number:'1.2-2' }}</span>
+        </span>
+        <button
+          (click)="openCategoryModal()"
+          type="button"
+          class="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700 dark:text-rose-300 hover:text-rose-800 dark:hover:text-rose-200 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 px-2 py-0.5 rounded-lg transition cursor-pointer border border-rose-200/60 dark:border-rose-800/60 shadow-2xs"
+          title="Ver distribución porcentual por categorías"
+        >
+          <span>Distribución</span>
+          <span>➔</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4: Tasa de Ahorro / Rendimiento -->
+  <div class="rounded-2xl bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 hover:shadow-md transition-all flex flex-col justify-between">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Tasa de Ahorro</span>
+      <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-100 dark:border-indigo-800">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      </div>
+    </div>
+    <div class="mt-2">
+      <div class="flex items-baseline justify-between">
+        <span class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{{ savingsRate }}%</span>
+        <span class="text-[11px] font-medium text-indigo-600 dark:text-indigo-400">Meta: 30%+</span>
+      </div>
+      <!-- Progress Bar -->
+      <div class="mt-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+        <div 
+          class="bg-indigo-600 dark:bg-indigo-500 h-1.5 rounded-full transition-all duration-500" 
+          [style.width.%]="savingsRate > 100 ? 100 : savingsRate"
+        ></div>
+      </div>
+      <p class="mt-1.5 text-[10px] text-slate-500 dark:text-slate-400 truncate">
+        {{ savingsRate >= 30 ? '¡Excelente control del presupuesto!' : 'Cuidado con gastos imprevistos' }}
+      </p>
+    </div>
   </div>
 
 </div>

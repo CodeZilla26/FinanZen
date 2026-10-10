@@ -1,0 +1,194 @@
+@if (isOpen) {
+  <div class="fixed inset-0 z-50 overflow-y-auto">
+    
+    <!-- Backdrop Blur -->
+    <div 
+      (click)="close()" 
+      class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm transition-opacity"
+      aria-hidden="true"
+    ></div>
+
+    <!-- Modal Box -->
+    <div class="flex min-h-full items-center justify-center p-3 sm:p-4 text-center sm:p-6">
+      <div 
+        class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-left shadow-2xl transition-all w-full max-w-5xl border border-slate-200 dark:border-slate-800 flex flex-col"
+        (click)="$event.stopPropagation()"
+      >
+        
+        <!-- Header -->
+        <div class="px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3 bg-slate-50/50 dark:bg-slate-900/50">
+          
+          <div class="flex items-center gap-2.5 sm:gap-3">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 flex items-center justify-center text-lg font-bold shadow-2xs shrink-0">
+              📊
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">Resumen General & Métricas</h3>
+                <span class="text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                  KPIs
+                </span>
+              </div>
+              <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate sm:whitespace-normal">Indicadores clave de balance financiero y deudas</p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+            <!-- Tabs switch inside modal -->
+            <div class="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-1 text-xs font-semibold flex-1 sm:flex-initial">
+              <button
+                type="button"
+                (click)="setTab('financial')"
+                class="flex-1 sm:flex-initial px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                [class]="activeTab === 'financial'
+                  ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-2xs font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+              >
+                <span>📈</span>
+                <span>Flujo & Balance</span>
+              </button>
+
+              <button
+                type="button"
+                (click)="setTab('debts')"
+                class="flex-1 sm:flex-initial px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                [class]="activeTab === 'debts'
+                  ? 'bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 shadow-2xs font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+              >
+                <span>⚖️</span>
+                <span>Control Deudas</span>
+              </button>
+            </div>
+
+            <!-- Close Button -->
+            <button 
+              (click)="close()"
+              type="button" 
+              title="Cerrar ventana"
+              class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shrink-0"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Body Content -->
+        <div class="p-3.5 sm:p-6 space-y-4 sm:space-y-5 max-h-[72vh] overflow-y-auto custom-scrollbar">
+          
+          <!-- Tab 1: Financial Flow & Balance -->
+          @if (activeTab === 'financial') {
+            <div class="space-y-4">
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">Balance General & Liquidez</h4>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">Total acumulado de ingresos, egresos y ahorro en el periodo seleccionado</p>
+                </div>
+              </div>
+
+              <!-- Embed financial summary cards -->
+              <app-summary-cards></app-summary-cards>
+
+              <!-- Secondary helper bar with quick modal shortcuts -->
+              <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
+                <div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                  <span class="text-base">💡</span>
+                  <span>¿Deseas profundizar en tus fuentes de dinero o gastos por categoría?</span>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    (click)="openAccountsModal()"
+                    class="flex-1 sm:flex-initial px-3 py-1.5 rounded-lg font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs text-center text-xs"
+                  >
+                    <span>💳</span>
+                    <span>Ver Mis Cuentas</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="openCategoryModal()"
+                    class="flex-1 sm:flex-initial px-3 py-1.5 rounded-lg font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-rose-500 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs text-center text-xs"
+                  >
+                    <span>📊</span>
+                    <span>Distribución Gastos</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          }
+
+          <!-- Tab 2: Debt Control -->
+          @if (activeTab === 'debts') {
+            <div class="space-y-4">
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">Monitoreo de Deudas y Préstamos Activos</h4>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">Compromisos financieros pendientes, préstamos concedidos y liquidaciones</p>
+                </div>
+              </div>
+
+              <!-- Embed debt summary cards -->
+              <app-debt-summary-cards></app-debt-summary-cards>
+
+              <!-- Helpful Note about accounting sync -->
+              <div class="p-3.5 rounded-xl bg-orange-50/60 dark:bg-orange-950/30 border border-orange-200/80 dark:border-orange-800/60 flex items-start gap-3 text-xs text-orange-800 dark:orange-300">
+                <span class="text-base shrink-0">🤝</span>
+                <div>
+                  <p class="font-bold text-orange-900 dark:text-orange-200">Sincronización Contable Automática</p>
+                  <p class="text-orange-700 dark:text-orange-300/90 mt-0.5">
+                    Al prestar dinero ("Me deben"), el monto se descuenta automáticamente de la cuenta seleccionada. Al recibir el pago o abonar a una deuda, el dinero ingresa o sale de la cuenta especificada registrando el movimiento contable correspondiente.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          }
+
+        </div>
+
+        <!-- Footer -->
+        <div class="px-4 sm:px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+          <span class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
+            {{ activeTab === 'financial' ? 'Visualizando balance financiero global' : 'Visualizando métricas de deudas y préstamos' }}
+          </span>
+          <div class="flex items-center justify-end gap-2 w-full sm:w-auto">
+            <button
+              (click)="close()"
+              type="button"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition cursor-pointer"
+            >
+              Cerrar
+            </button>
+            @if (activeTab === 'financial') {
+              <button
+                (click)="openNewMovement()"
+                type="button"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition cursor-pointer shadow-sm flex items-center gap-1.5"
+              >
+                <span>➕</span>
+                <span>Nueva Transacción</span>
+              </button>
+            } @else {
+              <button
+                (click)="openNewDebt()"
+                type="button"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-orange-600 hover:bg-orange-700 transition cursor-pointer shadow-sm flex items-center gap-1.5"
+              >
+                <span>➕</span>
+                <span>Registrar Deuda</span>
+              </button>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+}

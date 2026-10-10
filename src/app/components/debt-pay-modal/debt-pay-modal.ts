@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DebtService } from '../../services/debt.service';
@@ -19,6 +19,25 @@ export class DebtPayModalComponent {
 
   selectedAccount = 'efectivo';
   paymentDate = new Date().toISOString().substring(0, 10);
+
+  constructor() {
+    effect(() => {
+      const currentDebt = this.debtService.payingDebt();
+      if (currentDebt) {
+        // Si la deuda tenía cuenta de origen y no es 'none', sugerimos esa cuenta por defecto
+        if (currentDebt.originAccount && currentDebt.originAccount !== 'none') {
+          this.selectedAccount = currentDebt.originAccount;
+        } else {
+          this.selectedAccount = 'efectivo';
+        }
+        this.paymentDate = new Date().toISOString().substring(0, 10);
+      }
+    });
+  }
+
+  getAccountName(accountId: string): string {
+    return ACCOUNTS[accountId]?.name || accountId;
+  }
 
   get isOpen(): boolean {
     return this.debtService.isPayModalOpen();

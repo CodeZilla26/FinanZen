@@ -1,29 +1,152 @@
-<div class="h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors overflow-hidden">
+<div class="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors">
   
   <!-- Global Top Navigation -->
-  <app-navbar class="shrink-0"></app-navbar>
+  <app-navbar class="sticky top-0 z-30 shrink-0"></app-navbar>
 
-  <!-- Main Personal Wallet Viewport Area -->
-  <main class="flex-1 min-h-0 flex flex-col max-w-5xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 space-y-3 overflow-hidden">
+  <!-- Main Content Dashboard Area -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
     
-    <!-- Hero Section: Tarjeta Billetera Digital & Acciones Rápidas -->
-    <section aria-label="Billetera personal" class="shrink-0">
-      <app-summary-cards></app-summary-cards>
-    </section>
+    <!-- 1. Header Banner & Quick Actions -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          {{ activeTab === 'movements' ? 'Panel de Control Financiero' : 'Control de Deudas & Préstamos' }}
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          {{ activeTab === 'movements' 
+            ? 'Monitoreo de ingresos, gastos, transferencias entre cuentas y balance general en tiempo real.' 
+            : 'Seguimiento de dinero por cobrar, compromisos pendientes por pagar y sincronización bancaria.' }}
+        </p>
+      </div>
 
-    <!-- Timeline Section: Feed de Actividad Personal Agrupado por Fechas -->
-    <section aria-label="Actividad reciente" class="flex-1 min-h-0 flex flex-col overflow-hidden">
-      <app-movement-list class="block h-full min-h-0"></app-movement-list>
-    </section>
+      <!-- Quick Action Buttons -->
+      <div class="grid grid-cols-3 gap-2 w-full sm:w-auto sm:flex sm:items-center sm:gap-2.5">
+        <button
+          (click)="openAccountsModal()"
+          type="button"
+          class="px-2 sm:px-3.5 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-2xs hover:border-emerald-400 dark:hover:border-emerald-600 transition flex items-center justify-center gap-1.5 cursor-pointer text-center"
+          title="Abrir ventana de Mis Cuentas & Efectivo"
+        >
+          <span>💳</span>
+          <span class="truncate"><span class="sm:hidden">Cuentas</span><span class="hidden sm:inline">Mis Cuentas & Efectivo</span></span>
+        </button>
+
+        <button
+          (click)="openCategoryModal()"
+          type="button"
+          class="px-2 sm:px-3.5 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-2xs hover:border-rose-400 dark:hover:border-rose-600 transition flex items-center justify-center gap-1.5 cursor-pointer text-center"
+          title="Abrir ventana de Distribución de Gastos"
+        >
+          <span>📊</span>
+          <span class="truncate"><span class="sm:hidden">Gastos</span><span class="hidden sm:inline">Distribución Gastos</span></span>
+        </button>
+
+        <button
+          (click)="openSummaryModal()"
+          type="button"
+          class="px-2 sm:px-3.5 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer text-center"
+          title="Abrir ventana modal de resumen y KPIs"
+        >
+          <span>📈</span>
+          <span class="truncate"><span class="sm:hidden">Resumen</span><span class="hidden sm:inline">Ver Resumen</span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. Section: Navegación de Vistas (Tabs) & Acciones Principales -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 dark:border-slate-800 pb-3 gap-3">
+      
+      <!-- Left: Tabs for Movements vs Debts -->
+      <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+        
+        <button
+          (click)="setTab('movements')"
+          type="button"
+          class="flex-1 sm:flex-initial px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer shadow-2xs"
+          [class]="activeTab === 'movements'
+            ? 'bg-emerald-600 text-white shadow-sm'
+            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <span class="hidden sm:inline">Movimientos & Transacciones</span>
+          <span class="sm:hidden">Movimientos</span>
+          <span 
+            class="px-2 py-0.5 rounded-full text-xs font-bold shrink-0"
+            [class]="activeTab === 'movements' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'"
+          >
+            {{ totalMovementsCount }}
+          </span>
+        </button>
+
+        <button
+          (click)="setTab('debts')"
+          type="button"
+          class="flex-1 sm:flex-initial px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer shadow-2xs"
+          [class]="activeTab === 'debts'
+            ? 'bg-orange-600 text-white shadow-sm'
+            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span class="hidden sm:inline">Control de Deudas</span>
+          <span class="sm:hidden">Deudas</span>
+          @if (pendingDebtsCount > 0) {
+            <span 
+              class="px-2 py-0.5 rounded-full text-xs font-bold shrink-0"
+              [class]="activeTab === 'debts' ? 'bg-white/20 text-white' : 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'"
+            >
+              {{ pendingDebtsCount }} <span class="hidden sm:inline">pendientes</span>
+            </span>
+          }
+        </button>
+
+      </div>
+
+      <!-- Right: Action Button -->
+      <div class="w-full sm:w-auto">
+        @if (activeTab === 'movements') {
+          <button
+            (click)="financeService.openModal()"
+            type="button"
+            class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 transition cursor-pointer shadow-sm flex items-center justify-center gap-2"
+          >
+            <span>➕</span>
+            <span>Registrar Movimiento</span>
+          </button>
+        } @else {
+          <button
+            (click)="debtService.openModal()"
+            type="button"
+            class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-orange-600 hover:bg-orange-700 active:bg-orange-800 transition cursor-pointer shadow-sm flex items-center justify-center gap-2"
+          >
+            <span>➕</span>
+            <span>Registrar Deuda</span>
+          </button>
+        }
+      </div>
+
+    </div>
+
+    <!-- 4. Section: Principal Data View (Movements or Debts) -->
+    <div>
+      @if (activeTab === 'movements') {
+        <app-movement-list></app-movement-list>
+      } @else {
+        <app-debt-list></app-debt-list>
+      }
+    </div>
 
   </main>
 
-  <!-- Ventanas Modales Especializadas (Se abren bajo demanda para mantener la pantalla limpia) -->
+  <!-- Modals -->
   <app-movement-modal></app-movement-modal>
-  <app-debt-list></app-debt-list>
   <app-debt-modal></app-debt-modal>
   <app-debt-pay-modal></app-debt-pay-modal>
   <app-account-breakdown></app-account-breakdown>
   <app-category-breakdown></app-category-breakdown>
+  <app-summary-modal></app-summary-modal>
 
 </div>
